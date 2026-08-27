@@ -2,18 +2,13 @@
  * PhishYou — Dashboard / Command Center (`/dashboard`)
  * Spec: FRONTEND_SPEC_ENHANCED.md — PAGE 2: Dashboard
  * Checklist: IMPLEMENTATION_CHECKLIST.md — Page 2: Dashboard
- *
- * Data: GET /api/v1/organizations/me/dashboard (aggregated: campaigns, targets,
- * risk score, policy gaps, activity, trigger effectiveness, compliance).
- * Falls back to embedded demo data when the API is unreachable so the page
- * renders correctly without a running backend.
  */
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowDown,
-  ArrowUp,
+  BarChart3,
   BookOpen,
   CheckCircle2,
   ChevronRight,
@@ -28,76 +23,35 @@ import {
   StopCircle,
   Target,
   UserCog,
+  Users,
   XCircle,
 } from 'lucide-react';
-import {
-  Bar,
-  BarChart,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-
-/* ------------------------------------------------------------------ */
-/* Types                                                               */
-/* ------------------------------------------------------------------ */
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 type Tier = 'A' | 'B' | 'C';
 type Platform = 'email' | 'whatsapp' | 'sms' | 'voice' | 'linkedin' | 'instagram';
 
-interface LiveCampaign {
-  id: string;
-  name: string;
-  targetName: string;
-  platforms: Platform[];
-  resistanceScore: number; // 0..1
-  tier: Tier;
-}
-
+interface LiveCampaign { id: string; name: string; targetName: string; platforms: Platform[]; resistanceScore: number; tier: Tier; }
 interface ActivityEvent {
   id: string;
-  type:
-    | 'campaign_started'
-    | 'campaign_halted'
-    | 'target_defended'
-    | 'target_compromised'
-    | 'harm_detected'
-    | 'admin_action'
-    | 'debrief_delivered';
+  type: 'campaign_started' | 'campaign_halted' | 'target_defended' | 'target_compromised' | 'harm_detected' | 'admin_action' | 'debrief_delivered';
   title: string;
   description: string;
-  timestamp: string; // ISO
+  timestamp: string;
 }
-
-interface TriggerStat {
-  trigger: string;
-  effectiveness: number; // 0..100
-  samples: number;
-}
-
-interface ComplianceItem {
-  framework: string;
-  status: 'compliant' | 'pending' | 'non_compliant';
-  note: string;
-}
-
+interface TriggerStat { trigger: string; effectiveness: number; samples: number; }
+interface ComplianceItem { framework: string; status: 'compliant' | 'pending' | 'non_compliant'; note: string; }
 interface DashboardData {
   activeCampaigns: number;
   tierBreakdown: { A: number; B: number; C: number };
   targetsEngaged: { total: number; defended: number; compromised: number; active: number };
-  humanRiskScore: { score: number; delta: number }; // score 0..100, delta in points
+  humanRiskScore: { score: number; delta: number };
   policyGaps: { critical: number; high: number; medium: number };
   liveCampaigns: LiveCampaign[];
   recentActivity: ActivityEvent[];
   triggerStats: { triggers: TriggerStat[]; engagements: number; campaigns: number };
   compliance: { items: ComplianceItem[]; lastReview: string };
 }
-
-/* ------------------------------------------------------------------ */
-/* Demo data (used when API unreachable)                               */
-/* ------------------------------------------------------------------ */
 
 const DEMO_DATA: DashboardData = {
   activeCampaigns: 3,
@@ -106,30 +60,9 @@ const DEMO_DATA: DashboardData = {
   humanRiskScore: { score: 42, delta: -12 },
   policyGaps: { critical: 2, high: 3, medium: 4 },
   liveCampaigns: [
-    {
-      id: 'camp_2026_08_27_001',
-      name: 'Finance Team Payment Verification Q3',
-      targetName: '6 targets · Finance',
-      platforms: ['email', 'whatsapp'],
-      resistanceScore: 0.68,
-      tier: 'A',
-    },
-    {
-      id: 'camp_2026_08_27_002',
-      name: 'HR Onboarding Reset Wave 2',
-      targetName: '4 targets · People Ops',
-      platforms: ['email'],
-      resistanceScore: 0.31,
-      tier: 'B',
-    },
-    {
-      id: 'camp_2026_08_27_003',
-      name: 'Executive Whaling Simulation',
-      targetName: '2 targets · Leadership',
-      platforms: ['voice', 'sms'],
-      resistanceScore: 0.82,
-      tier: 'A',
-    },
+    { id: 'camp_2026_08_27_001', name: 'Finance Team Payment Verification Q3', targetName: '6 targets · Finance', platforms: ['email', 'whatsapp'], resistanceScore: 0.68, tier: 'A' },
+    { id: 'camp_2026_08_27_002', name: 'HR Onboarding Reset Wave 2', targetName: '4 targets · People Ops', platforms: ['email'], resistanceScore: 0.31, tier: 'B' },
+    { id: 'camp_2026_08_27_003', name: 'Executive Whaling Simulation', targetName: '2 targets · Leadership', platforms: ['voice', 'sms'], resistanceScore: 0.82, tier: 'A' },
   ],
   recentActivity: [
     { id: 'ev1', type: 'target_compromised', title: 'Target compromised', description: 'Finance · credential entered on simulated portal', timestamp: minutesAgo(3) },
@@ -163,32 +96,27 @@ const DEMO_DATA: DashboardData = {
   },
 };
 
-function minutesAgo(m: number): string {
-  return new Date(Date.now() - m * 60_000).toISOString();
+function minutesAgo(minutes: number): string {
+  return new Date(Date.now() - minutes * 60_000).toISOString();
 }
-
-/* ------------------------------------------------------------------ */
-/* Helpers                                                             */
-/* ------------------------------------------------------------------ */
 
 async function fetchDashboard(): Promise<DashboardData> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 4000);
+  const timer = window.setTimeout(() => controller.abort(), 4000);
   try {
-    const res = await fetch('/api/v1/organizations/me/dashboard', {
+    const response = await fetch('/api/v1/organizations/me/dashboard', {
       headers: { Accept: 'application/json' },
       signal: controller.signal,
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return (await res.json()) as DashboardData;
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return (await response.json()) as DashboardData;
   } finally {
-    clearTimeout(timer);
+    window.clearTimeout(timer);
   }
 }
 
 function relativeTime(iso: string): string {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diffMs / 60_000);
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
   if (mins < 1) return 'just now';
   if (mins < 60) return `${mins} min ago`;
   const hours = Math.floor(mins / 60);
@@ -205,7 +133,6 @@ const platformIcon: Record<Platform, typeof Mail> = {
   instagram: MessageCircle,
 };
 
-/** Resistance score color: green < 0.33, amber 0.33–0.67, red > 0.67. */
 function resistanceColor(score: number): string {
   if (score < 0.33) return '#06D369';
   if (score <= 0.67) return '#F59E0B';
@@ -213,437 +140,242 @@ function resistanceColor(score: number): string {
 }
 
 const tierStyles: Record<Tier, string> = {
-  A: 'bg-red-500/15 text-[#FF4757]',
-  B: 'bg-amber-400/10 text-[#F59E0B]',
-  C: 'bg-green-400/10 text-[#06D369]',
+  A: 'bg-[#FF4757]/10 text-[#FF7B86] border-[#FF4757]/20',
+  B: 'bg-[#F59E0B]/10 text-[#F6BF5C] border-[#F59E0B]/20',
+  C: 'bg-[#06D369]/10 text-[#58E6A0] border-[#06D369]/20',
 };
 
-/* ------------------------------------------------------------------ */
-/* Resistance gauge (signature element — 48px inline variant)          */
-/* ------------------------------------------------------------------ */
-
-function Gauge({ value, size = 48 }: { value: number; size?: number }) {
+function Gauge({ value, size = 56 }: { value: number; size?: number }) {
   const clamped = Math.min(1, Math.max(0, value));
   const stroke = 4;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
   const color = resistanceColor(clamped);
-  const pulse =
-    clamped > 0.7 ? 'py-pulse-urgent' : clamped >= 0.3 ? 'py-pulse-gentle' : '';
+
   return (
     <div
-      className={`relative shrink-0 ${pulse}`}
+      className={`relative shrink-0 ${clamped > 0.7 ? 'py-pulse-live' : clamped >= 0.3 ? 'py-pulse-soft' : ''}`}
       style={{ width: size, height: size }}
       role="img"
       aria-label={`Resistance score ${Math.round(clamped * 100)}%`}
     >
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#3D4860" strokeWidth={stroke} />
+      <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#3D4860" strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}
-          r={r}
+          r={radius}
           fill="none"
           stroke={color}
           strokeWidth={stroke}
           strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={c * (1 - clamped)}
-          style={{ transition: 'stroke-dashoffset 1000ms ease-in-out, stroke 300ms' }}
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - clamped)}
+          className="transition-[stroke-dashoffset,stroke] duration-1000 ease-out"
         />
       </svg>
-      <span
-        className="absolute inset-0 flex items-center justify-center text-xs font-mono font-bold"
-        style={{ color }}
-      >
+      <span className="absolute inset-0 flex items-center justify-center font-mono text-xs font-bold" style={{ color }}>
         {Math.round(clamped * 100)}
       </span>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* KPI strip cards                                                     */
-/* ------------------------------------------------------------------ */
-
-function KpiCard({ children }: { children: ReactNode }) {
+function KpiCard({
+  icon: Icon,
+  label,
+  value,
+  children,
+  tone = 'text-white',
+}: {
+  icon: typeof BarChart3;
+  label: string;
+  value: string | number;
+  children?: ReactNode;
+  tone?: string;
+}) {
   return (
-    <div className="bg-[#111827] border border-[#2D3748] rounded-xl p-5 transition-shadow duration-200 hover:shadow-md">
-      {children}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Live campaign pill                                                  */
-/* ------------------------------------------------------------------ */
-
-function CampaignLivePill({ campaign }: { campaign: LiveCampaign }) {
-  const navigate = useNavigate();
-  return (
-    <div className="flex items-center justify-between gap-4 border-b border-[#2D3748] py-4 last:border-0 border-l-2 border-l-[#2FD9C7] pl-3">
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-white truncate">{campaign.name}</div>
-        <div className="text-xs text-slate-400 truncate">{campaign.targetName}</div>
-        <div className="flex items-center gap-1.5 mt-1.5">
-          {campaign.platforms.map((p) => {
-            const Icon = platformIcon[p];
-            return (
-              <Icon
-                key={p}
-                className="w-3.5 h-3.5 text-slate-500"
-                aria-label={p}
-                role="img"
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      <Gauge value={campaign.resistanceScore} />
-
-      <div className="flex flex-col items-end gap-2 shrink-0">
-        <span
-          className={`px-2 py-1 rounded-md text-xs font-semibold ${tierStyles[campaign.tier]}`}
-        >
-          Tier {campaign.tier}
+    <article className="py-sheen rounded-2xl border border-[#2D3748] bg-[#15191F] p-5 transition duration-300 hover:-translate-y-0.5 hover:border-[#3D4860] hover:shadow-[0_16px_34px_rgba(0,0,0,0.22)]">
+      <div className="flex items-center justify-between">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#232D39] text-[#A8B4C4]">
+          <Icon className="h-4 w-4" />
         </span>
-        <button
-          type="button"
-          onClick={() => navigate(`/campaigns/${campaign.id}/live`)}
-          className="rounded-lg border border-[#3D4860] px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-[#2FD9C7]/10 hover:border-[#2FD9C7]/50 hover:text-[#2FD9C7] transition-colors duration-200"
-        >
-          View Live
-        </button>
+        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#5A6470]">Live</span>
       </div>
-    </div>
+      <div className={`mt-5 text-3xl font-black tracking-[-0.03em] ${tone}`}>{value}</div>
+      <div className="mt-1 text-sm text-[#A8B4C4]">{label}</div>
+      {children}
+    </article>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* Activity feed                                                       */
-/* ------------------------------------------------------------------ */
-
-const activityMeta: Record<ActivityEvent['type'], { icon: typeof PlayCircle; color: string; bg: string }> = {
-  campaign_started: { icon: PlayCircle, color: '#2FD9C7', bg: 'bg-[#2FD9C7]/10' },
-  campaign_halted: { icon: StopCircle, color: '#FF4757', bg: 'bg-red-500/10' },
-  target_defended: { icon: ShieldCheck, color: '#06D369', bg: 'bg-green-400/10' },
-  target_compromised: { icon: ShieldX, color: '#FF4757', bg: 'bg-red-500/15' },
-  harm_detected: { icon: AlertTriangle, color: '#F59E0B', bg: 'bg-amber-400/10' },
-  admin_action: { icon: UserCog, color: '#5B9EFF', bg: 'bg-blue-500/10' },
-  debrief_delivered: { icon: BookOpen, color: '#A78BFA', bg: 'bg-purple-400/10' },
-};
-
-function ActivityRow({ event }: { event: ActivityEvent }) {
-  const meta = activityMeta[event.type] ?? activityMeta.admin_action;
-  const Icon = meta.icon;
-  return (
-    <div className="flex items-start gap-3 py-3 border-b border-[#2D3748] last:border-0">
-      <span
-        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${meta.bg}`}
-        aria-hidden="true"
-      >
-        <Icon className="w-4 h-4" style={{ color: meta.color }} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium text-white">{event.title}</div>
-        <div className="text-xs text-slate-400">{event.description}</div>
-      </div>
-      <span className="text-xs text-slate-500 ml-auto shrink-0">{relativeTime(event.timestamp)}</span>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Page                                                                */
-/* ------------------------------------------------------------------ */
-
-const panel = 'bg-[#111827] border border-[#2D3748] rounded-xl p-5';
-const chartTooltipStyle = {
-  backgroundColor: '#15191F',
-  border: '1px solid #2D3748',
-  borderRadius: 8,
-  fontSize: 12,
-  color: '#F5F7FB',
-};
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loadingError, setLoadingError] = useState(false);
   const navigate = useNavigate();
-
-  const load = async () => {
-    setError(null);
-    try {
-      setData(await fetchDashboard());
-    } catch {
-      setData(DEMO_DATA); // demo fallback
-    }
-  };
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const today = useMemo(
-    () =>
-      new Intl.DateTimeFormat('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      }).format(new Date()),
+  const dateLabel = useMemo(
+    () => new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date()),
     [],
   );
 
+  useEffect(() => {
+    fetchDashboard()
+      .then(setData)
+      .catch(() => {
+        setData(DEMO_DATA);
+        setLoadingError(true);
+      });
+  }, []);
+
   if (!data) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        {error ? (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center max-w-md">
-            <XCircle className="w-8 h-8 text-red-400 mx-auto mb-3" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-white mb-1">Something went wrong</h2>
-            <p className="text-sm text-slate-300 mb-4">{error}</p>
-            <button
-              type="button"
-              onClick={load}
-              className="rounded-lg bg-[#2FD9C7] px-4 py-2 text-sm font-semibold text-[#0F1219] hover:bg-[#4FE5D3] transition-colors"
-            >
-              Try again
-            </button>
-          </div>
-        ) : (
-          <Loader2 className="w-8 h-8 animate-spin text-[#2FD9C7]" aria-label="Loading dashboard" />
-        )}
+      <div className="flex min-h-[60vh] items-center justify-center bg-[#0F1219]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#2FD9C7]" aria-label="Loading dashboard" />
       </div>
     );
   }
 
-  const tierTotal =
-    data.tierBreakdown.A + data.tierBreakdown.B + data.tierBreakdown.C || 1;
-  const risk = data.humanRiskScore;
-  const riskColor =
-    risk.score > 60 ? 'text-[#FF4757]' : risk.score >= 30 ? 'text-[#F59E0B]' : 'text-[#06D369]';
-  const gaps = data.policyGaps;
+  const tierTotal = Math.max(1, data.tierBreakdown.A + data.tierBreakdown.B + data.tierBreakdown.C);
+  const riskTone = data.humanRiskScore.score > 60 ? 'text-[#FF4757]' : data.humanRiskScore.score >= 30 ? 'text-[#F59E0B]' : 'text-[#06D369]';
+  const riskImproving = data.humanRiskScore.delta <= 0;
+  const gapTotal = data.policyGaps.critical + data.policyGaps.high + data.policyGaps.medium;
+
+  const activityMeta: Record<ActivityEvent['type'], { icon: typeof PlayCircle; color: string; bg: string }> = {
+    campaign_started: { icon: PlayCircle, color: '#2FD9C7', bg: 'bg-[#2FD9C7]/10' },
+    campaign_halted: { icon: StopCircle, color: '#FF4757', bg: 'bg-[#FF4757]/10' },
+    target_defended: { icon: ShieldCheck, color: '#06D369', bg: 'bg-[#06D369]/10' },
+    target_compromised: { icon: ShieldX, color: '#FF4757', bg: 'bg-[#FF4757]/12' },
+    harm_detected: { icon: AlertTriangle, color: '#F59E0B', bg: 'bg-[#F59E0B]/10' },
+    admin_action: { icon: UserCog, color: '#5B9EFF', bg: 'bg-[#5B9EFF]/10' },
+    debrief_delivered: { icon: BookOpen, color: '#A78BFA', bg: 'bg-[#A78BFA]/10' },
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <style>{`
-        @keyframes pyPulse { 0%,100% { opacity: 1; } 50% { opacity: .8; } }
-        .py-pulse-gentle { animation: pyPulse 2s ease-in-out infinite; }
-        .py-pulse-urgent { animation: pyPulse 1.2s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) {
-          .py-pulse-gentle, .py-pulse-urgent { animation: none; }
-        }
-      `}</style>
+    <div className="relative min-h-screen overflow-hidden bg-[#0F1219] px-4 py-8 text-[#F5F7FB] sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-[#2FD9C7]/[0.035] to-transparent" />
+      <div className="relative mx-auto max-w-7xl">
+        {loadingError && (
+          <div className="mb-5 rounded-xl border border-[#F59E0B]/20 bg-[#F59E0B]/[0.06] px-4 py-3 text-xs text-[#F6BF5C]">
+            Showing demo data because the dashboard API is unavailable.
+          </div>
+        )}
 
-      {/* Header */}
-      <header className="mb-6">
-        <h1 className="text-3xl font-black tracking-tight text-white">Command Center</h1>
-        <p className="text-sm text-slate-400 mt-1">{today}</p>
-      </header>
-
-      {/* Section 2.1 — KPI strip */}
-      <section aria-label="Key metrics" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard>
-          <div className="text-4xl font-black text-[#2FD9C7]">{data.activeCampaigns}</div>
-          <div className="text-sm text-slate-400 mt-1">Campaigns Live</div>
-          <div className="flex h-1.5 rounded-full overflow-hidden mt-4" aria-hidden="true">
-            <div className="bg-[#FF4757]" style={{ width: `${(data.tierBreakdown.A / tierTotal) * 100}%` }} />
-            <div className="bg-[#F59E0B]" style={{ width: `${(data.tierBreakdown.B / tierTotal) * 100}%` }} />
-            <div className="bg-[#06D369]" style={{ width: `${(data.tierBreakdown.C / tierTotal) * 100}%` }} />
-          </div>
-          <div className="flex justify-between text-[10px] text-slate-500 mt-1.5">
-            <span>A: {data.tierBreakdown.A}</span>
-            <span>B: {data.tierBreakdown.B}</span>
-            <span>C: {data.tierBreakdown.C}</span>
-          </div>
-        </KpiCard>
-
-        <KpiCard>
-          <div className="text-4xl font-black text-white">{data.targetsEngaged.total}</div>
-          <div className="text-sm text-slate-400 mt-1">Employees Targeted This Month</div>
-          <div className="text-xs text-slate-400 mt-4">
-            <span className="text-[#06D369]">{data.targetsEngaged.defended} defended</span>
-            {' · '}
-            <span className="text-[#FF4757]">{data.targetsEngaged.compromised} compromised</span>
-            {' · '}
-            {data.targetsEngaged.active} active
-          </div>
-        </KpiCard>
-
-        <KpiCard>
-          <div className={`text-4xl font-black ${riskColor}`}>{risk.score}</div>
-          <div className="text-sm text-slate-400 mt-1">Human Risk Score</div>
-          <div className="flex items-center gap-1 mt-4 text-xs">
-            {risk.delta <= 0 ? (
-              <>
-                <ArrowDown className="w-3.5 h-3.5 text-[#06D369]" aria-hidden="true" />
-                <span className="text-[#06D369]">{Math.abs(risk.delta)}pts from last month</span>
-              </>
-            ) : (
-              <>
-                <ArrowUp className="w-3.5 h-3.5 text-[#FF4757]" aria-hidden="true" />
-                <span className="text-[#FF4757]">{risk.delta}pts from last month</span>
-              </>
-            )}
-          </div>
-        </KpiCard>
-
-        <KpiCard>
-          <div className="text-4xl font-black text-[#F59E0B]">
-            {gaps.critical + gaps.high + gaps.medium}
-          </div>
-          <div className="text-sm text-slate-400 mt-1">Policy Gaps Detected</div>
-          <div className="text-xs text-slate-400 mt-4">
-            <span className="text-[#FF4757]">{gaps.critical} critical</span>
-            {' · '}
-            <span className="text-[#F59E0B]">{gaps.high} high</span>
-            {' · '}
-            <span className="text-[#5B9EFF]">{gaps.medium} medium</span>
-          </div>
-        </KpiCard>
-      </section>
-
-      {/* Section 2.2 — Live campaign feed */}
-      <section aria-label="Live campaigns" className={`${panel} mt-6`}>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-white">Live Campaigns</h2>
-            <span className="relative flex w-2 h-2" aria-hidden="true">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2FD9C7] opacity-60" />
-              <span className="relative inline-flex rounded-full w-2 h-2 bg-[#2FD9C7]" />
-            </span>
-          </div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#2FD9C7] bg-[#2FD9C7]/10 rounded-full px-3 py-1">
-            Real-time
-          </span>
-        </div>
-
-        {data.liveCampaigns.length === 0 ? (
-          <div className="text-center py-10">
-            <Target className="w-12 h-12 text-slate-600 mx-auto mb-4" aria-hidden="true" />
-            <h3 className="text-lg font-semibold text-slate-400 mb-2">No campaigns running</h3>
-            <p className="text-sm text-slate-500 mb-6">Start a campaign to see live activity here.</p>
-            <button
-              type="button"
-              onClick={() => navigate('/campaigns/new')}
-              className="rounded-lg bg-[#2FD9C7] px-4 py-2.5 text-sm font-semibold text-[#0F1219] hover:bg-[#4FE5D3] transition-colors"
-            >
-              Create Campaign
-            </button>
-          </div>
-        ) : (
+        <header className="mb-7 flex flex-wrap items-end justify-between gap-4 py-fade-up">
           <div>
-            {data.liveCampaigns.map((c) => (
-              <CampaignLivePill key={c.id} campaign={c} />
+            <div className="mb-2 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#2FD9C7]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#2FD9C7]" /> Security operations
+            </div>
+            <h1 className="text-4xl font-black tracking-[-0.04em]">Command Center</h1>
+            <p className="mt-1 text-sm text-[#7A8595]">{dateLabel} · A calm view of what needs attention.</p>
+          </div>
+          <button
+            onClick={() => navigate('/campaigns/new')}
+            className="min-h-11 rounded-xl bg-[#2FD9C7] px-4 py-2.5 text-sm font-bold text-[#0F1219] shadow-[0_10px_28px_rgba(47,217,199,0.10)] hover:-translate-y-0.5 hover:bg-[#4FE5D3] active:translate-y-0"
+          >
+            Create campaign <span className="ml-1">→</span>
+          </button>
+        </header>
+
+        <section aria-label="Key metrics" className="grid grid-cols-2 gap-4 lg:grid-cols-4 py-fade-up py-fade-up-delay-1">
+          <KpiCard icon={Target} label="Campaigns live" value={data.activeCampaigns} tone="text-[#2FD9C7]">
+            <div className="mt-4 flex h-1.5 overflow-hidden rounded-full bg-[#232D39]" aria-hidden="true">
+              <div className="bg-[#FF4757]" style={{ width: `${(data.tierBreakdown.A / tierTotal) * 100}%` }} />
+              <div className="bg-[#F59E0B]" style={{ width: `${(data.tierBreakdown.B / tierTotal) * 100}%` }} />
+              <div className="bg-[#06D369]" style={{ width: `${(data.tierBreakdown.C / tierTotal) * 100}%` }} />
+            </div>
+            <div className="mt-1 flex justify-between text-[10px] text-[#5A6470]
+">
+              <span>A {data.tierBreakdown.A}</span><span>B {data.tierBreakdown.B}</span><span>C {data.tierBreakdown.C}</span>
+            </div>
+          </KpiCard>
+
+          <KpiCard icon={Users} label="Employees targeted this month" value={data.targetsEngaged.total}>
+            <div className="mt-4 text-xs text-[#7A8595]"><span className="text-[#06D369]">{data.targetsEngaged.defended} defended</span> · <span className="text-[#FF4757]">{data.targetsEngaged.compromised} compromised</span> · {data.targetsEngaged.active} active</div>
+          </KpiCard>
+
+          <KpiCard icon={ShieldCheck} label="Human risk score" value={data.humanRiskScore.score} tone={riskTone}>
+            <div className={`mt-4 flex items-center gap-1 text-xs ${riskImproving ? 'text-[#06D369]' : 'text-[#FF4757]'}`}>
+              <ArrowDown className={`h-3.5 w-3.5 ${riskImproving ? '' : 'rotate-180'}`} />
+              {Math.abs(data.humanRiskScore.delta)}pts vs last month
+            </div>
+          </KpiCard>
+
+          <KpiCard icon={AlertTriangle} label="Policy gaps detected" value={gapTotal} tone="text-[#F59E0B]">
+            <div className="mt-4 text-xs text-[#7A8595]"><span className="text-[#FF4757]">{data.policyGaps.critical} critical</span> · <span className="text-[#F59E0B]">{data.policyGaps.high} high</span> · {data.policyGaps.medium} medium</div>
+          </KpiCard>
+        </section>
+
+        <section aria-label="Live campaigns" className="mt-6 rounded-2xl border border-[#2D3748] bg-[#15191F] p-5 py-fade-up py-fade-up-delay-2 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2"><h2 className="text-lg font-bold">Live campaigns</h2><span className="py-pulse-live h-2 w-2 rounded-full bg-[#2FD9C7]" /></div>
+              <p className="mt-1 text-xs text-[#7A8595]">Real-time operational overview</p>
+            </div>
+            <span className="rounded-full border border-[#2FD9C7]/20 bg-[#2FD9C7]/[0.06] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#8FEFE3]">{data.activeCampaigns} active</span>
+          </div>
+          <div className="mt-4 divide-y divide-[#2D3748]">
+            {data.liveCampaigns.map((campaign) => (
+              <div key={campaign.id} className="group flex flex-wrap items-center gap-4 py-4 last:pb-1">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="truncate text-sm font-bold">{campaign.name}</h3>
+                    <span className={`rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${tierStyles[campaign.tier]}`}>Tier {campaign.tier}</span>
+                  </div>
+                  <p className="mt-1 truncate text-xs text-[#7A8595]">{campaign.targetName}</p>
+                  <div className="mt-2 flex items-center gap-1.5 text-[#5A6470]">{campaign.platforms.map((platform) => { const Icon = platformIcon[platform]; return <Icon key={platform} className="h-3.5 w-3.5" aria-label={platform} />; })}</div>
+                </div>
+                <Gauge value={campaign.resistanceScore} />
+                <button onClick={() => navigate(`/campaigns/${campaign.id}/live`)} className="min-h-10 rounded-lg border border-[#3D4860] px-3.5 py-2 text-xs font-semibold text-[#A8B4C4] hover:border-[#2FD9C7]/45 hover:bg-[#2FD9C7]/[0.05] hover:text-[#2FD9C7]">
+                  View live <ChevronRight className="ml-1 inline h-3.5 w-3.5" />
+                </button>
+              </div>
             ))}
           </div>
-        )}
-      </section>
-
-      {/* Section 2.3 — Two-column lower section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
-        <section aria-label="Recent activity" className={panel}>
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-bold text-white">Recent Activity</h2>
-            <Link
-              to="/audit"
-              className="text-xs text-[#2FD9C7] hover:text-[#1FA89D] transition-colors inline-flex items-center gap-1"
-            >
-              View all <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
-            </Link>
-          </div>
-          {data.recentActivity.slice(0, 8).map((ev) => (
-            <ActivityRow key={ev.id} event={ev} />
-          ))}
         </section>
 
-        <section aria-label="Trigger effectiveness" className={panel}>
-          <h2 className="text-lg font-bold text-white mb-4">Trigger Effectiveness (Last 30 Days)</h2>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={data.triggerStats.triggers}
-                layout="vertical"
-                margin={{ top: 0, right: 16, bottom: 0, left: 8 }}
-              >
-                <XAxis
-                  type="number"
-                  domain={[0, 100]}
-                  tick={{ fill: '#7A8595', fontSize: 12 }}
-                  axisLine={{ stroke: '#2D3748' }}
-                  tickLine={false}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="trigger"
-                  width={100}
-                  tick={{ fill: '#A8B4C4', fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  contentStyle={chartTooltipStyle}
-                  formatter={(value: number | string, name) =>
-                    name === 'effectiveness'
-                      ? [`${value}%`, 'Effectiveness']
-                      : [value, name]
-                  }
-                  labelFormatter={(label) => `${label}`}
-                />
-                <Bar dataKey="effectiveness" radius={[0, 4, 4, 0]} isAnimationActive>
-                  {data.triggerStats.triggers.map((t) => (
-                    <Cell key={t.trigger} fill="#A78BFA" />
-                  ))}
-                </Bar>
-                {/* sample count surfaced in tooltip */}
-                <Bar dataKey="samples" hide />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <p className="text-xs text-slate-500 text-center mt-2">
-            Based on {data.triggerStats.engagements} engagements across {data.triggerStats.campaigns} campaigns
-          </p>
-        </section>
-      </div>
-
-      {/* Section 2.4 — Compliance health strip */}
-      <section aria-label="Compliance health" className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-        {data.compliance.items.map((item) => {
-          const Icon =
-            item.status === 'compliant'
-              ? CheckCircle2
-              : item.status === 'pending'
-                ? Clock
-                : XCircle;
-          const color =
-            item.status === 'compliant'
-              ? '#06D369'
-              : item.status === 'pending'
-                ? '#F59E0B'
-                : '#FF4757';
-          const label =
-            item.status === 'compliant' ? 'Compliant' : item.status === 'pending' ? 'Pending' : 'Action needed';
-          return (
-            <div key={item.framework} className="bg-[#111827] border border-[#2D3748] rounded-xl p-4">
-              <Icon className="w-5 h-5 mb-2" style={{ color }} aria-hidden="true" />
-              <div className="text-sm font-semibold text-white">{item.framework}</div>
-              <div className="text-xs mt-0.5" style={{ color }}>
-                {label}
-              </div>
-              <div className="text-xs text-slate-500 mt-1">{item.note}</div>
+        <div className="mt-6 grid gap-4 lg:grid-cols-2 py-fade-up py-fade-up-delay-3">
+          <section className="rounded-2xl border border-[#2D3748] bg-[#15191F] p-5 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div><h2 className="text-lg font-bold">Recent activity</h2><p className="mt-1 text-xs text-[#7A8595]">Latest actions across the organization</p></div>
+              <Link to="/audit" className="text-xs font-semibold text-[#2FD9C7] hover:text-[#4FE5D3]">View all →</Link>
             </div>
-          );
-        })}
-      </section>
-      <p className="text-xs text-slate-500 mt-3">
-        Last compliance review:{' '}
-        {new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(
-          new Date(data.compliance.lastReview),
-        )}
-      </p>
+            <div className="mt-4">
+              {data.recentActivity.slice(0, 6).map((event) => {
+                const meta = activityMeta[event.type];
+                const Icon = meta.icon;
+                return <div key={event.id} className="flex items-start gap-3 border-b border-[#2D3748] py-3 last:border-0"><span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${meta.bg}`}><Icon className="h-4 w-4" style={{ color: meta.color }} /></span><div className="min-w-0 flex-1"><div className="text-sm font-semibold">{event.title}</div><div className="mt-0.5 text-xs leading-5 text-[#7A8595]">{event.description}</div></div><time className="shrink-0 text-[10px] text-[#5A6470]">{relativeTime(event.timestamp)}</time></div>;
+              })}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-[#2D3748] bg-[#15191F] p-5 sm:p-6">
+            <div><h2 className="text-lg font-bold">Trigger effectiveness</h2><p className="mt-1 text-xs text-[#7A8595]">Last 30 days</p></div>
+            <div className="mt-5 h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data.triggerStats.triggers} layout="vertical" margin={{ top: 0, right: 8, bottom: 0, left: 8 }}>
+                  <XAxis type="number" domain={[0, 100]} tick={{ fill: '#7A8595', fontSize: 11 }} axisLine={{ stroke: '#2D3748' }} tickLine={false} />
+                  <YAxis type="category" dataKey="trigger" width={90} tick={{ fill: '#A8B4C4', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: '#1D232D', border: '1px solid #3D4860', borderRadius: 12, fontSize: 12, color: '#F5F7FB' }} formatter={(value: number | string) => [`${value}%`, 'Effectiveness']} />
+                  <Bar dataKey="effectiveness" radius={[0, 6, 6, 0]} isAnimationActive>
+                    <Cell fill="#A78BFA" /><Cell fill="#60A5FA" /><Cell fill="#34D399" /><Cell fill="#FBBF24" /><Cell fill="#2FD9C7" />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="text-center text-[10px] text-[#5A6470]">{data.triggerStats.engagements} engagements · {data.triggerStats.campaigns} campaigns</p>
+          </section>
+        </div>
+
+        <section aria-label="Compliance health" className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4 py-fade-up py-fade-up-delay-4">
+          {data.compliance.items.map((item) => {
+            const Icon = item.status === 'compliant' ? CheckCircle2 : item.status === 'pending' ? Clock : XCircle;
+            const color = item.status === 'compliant' ? '#06D369' : item.status === 'pending' ? '#F59E0B' : '#FF4757';
+            const statusLabel = item.status === 'compliant' ? 'Healthy' : item.status === 'pending' ? 'Review' : 'Action';
+            return <div key={item.framework} className="py-sheen rounded-xl border border-[#2D3748] bg-[#15191F] p-4 transition duration-300 hover:-translate-y-0.5 hover:border-[#3D4860]"><div className="flex items-center justify-between"><Icon className="h-5 w-5" style={{ color }} /><span className="text-[10px] font-bold uppercase tracking-wider" style={{ color }}>{statusLabel}</span></div><div className="mt-3 text-sm font-bold">{item.framework}</div><div className="mt-1 text-xs text-[#7A8595]">{item.note}</div></div>;
+          })}
+        </section>
+        <p className="mt-3 text-xs text-[#5A6470]">Last compliance review: {new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(data.compliance.lastReview))}</p>
+      </div>
     </div>
   );
 }
