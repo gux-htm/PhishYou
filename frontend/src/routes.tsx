@@ -1,9 +1,9 @@
 // Hello World
 import { RouteObject } from 'react-router-dom';
-import Landing from './pages/Landing';
+import { Landing } from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import Learning from './pages/Learning';
+import { Learning } from './pages/Learning';
 import LiveCampaignMonitor from './pages/LiveCampaignMonitor';
 import Integrations from './pages/Integrations';
 import Organization from './pages/Organization';
