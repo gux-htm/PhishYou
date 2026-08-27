@@ -1,4 +1,4 @@
-// Hello World
+/* Hello World */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -39,121 +39,45 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-button,
-a,
-input,
-select,
-textarea {
-  -webkit-tap-highlight-color: transparent;
-}
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 
-button,
-a {
+button, a {
   transition-property: color, background-color, border-color, box-shadow, transform, opacity;
   transition-duration: 200ms;
   transition-timing-function: ease-out;
 }
 
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--py-teal);
   outline-offset: 3px;
 }
 
-::selection {
-  background: rgba(47, 217, 199, 0.25);
-  color: var(--py-text);
-}
+::selection { background: rgba(47, 217, 199, 0.25); color: var(--py-text); }
 
 .py-grid-noise {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
   background-size: 40px 40px;
   mask-image: linear-gradient(to bottom, black 0%, transparent 85%);
 }
+.py-glass { background: rgba(21, 25, 31, 0.76); border: 1px solid rgba(61, 72, 96, 0.65); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.py-sheen { position: relative; overflow: hidden; }
+.py-sheen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.035) 45%, transparent 62%); transform: translateX(-120%); transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1); }
+.py-sheen:hover::after { transform: translateX(120%); }
+.py-fade-up { animation: pyFadeUp 500ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.py-fade-up-delay-1 { animation-delay: 80ms; }
+.py-fade-up-delay-2 { animation-delay: 160ms; }
+.py-fade-up-delay-3 { animation-delay: 240ms; }
+.py-fade-up-delay-4 { animation-delay: 320ms; }
+.py-pulse-soft { animation: pyPulseSoft 2.4s ease-in-out infinite; }
+.py-pulse-live { animation: pyPulseLive 1.8s ease-in-out infinite; }
 
-.py-glass {
-  background: rgba(21, 25, 31, 0.76);
-  border: 1px solid rgba(61, 72, 96, 0.65);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-.py-sheen {
-  position: relative;
-  overflow: hidden;
-}
-
-.py-sheen::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.035) 45%, transparent 62%);
-  transform: translateX(-120%);
-  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.py-sheen:hover::after {
-  transform: translateX(120%);
-}
-
-.py-fade-up {
-  animation: pyFadeUp 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.py-fade-up-delay-1 {
-  animation-delay: 80ms;
-}
-
-.py-fade-up-delay-2 {
-  animation-delay: 160ms;
-}
-
-.py-fade-up-delay-3 {
-  animation-delay: 240ms;
-}
-
-.py-fade-up-delay-4 {
-  animation-delay: 320ms;
-}
-
-.py-pulse-soft {
-  animation: pyPulseSoft 2.4s ease-in-out infinite;
-}
-
-.py-pulse-live {
-  animation: pyPulseLive 1.8s ease-in-out infinite;
-}
-
-@keyframes pyFadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes pyPulseSoft {
-  0%, 100% { opacity: 0.78; }
-  50% { opacity: 1; }
-}
-
-@keyframes pyPulseLive {
-  0%, 100% { opacity: 0.72; box-shadow: 0 0 0 0 rgba(47, 217, 199, 0.20); }
-  50% { opacity: 1; box-shadow: 0 0 0 7px rgba(47, 217, 199, 0); }
-}
+@keyframes pyFadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pyPulseSoft { 0%, 100% { opacity: 0.78; } 50% { opacity: 1; } }
+@keyframes pyPulseLive { 0%, 100% { opacity: 0.72; box-shadow: 0 0 0 0 rgba(47, 217, 199, 0.20); } 50% { opacity: 1; box-shadow: 0 0 0 7px rgba(47, 217, 199, 0); } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
