@@ -1,0 +1,1 @@
+Intentionally left placeholder-only frontend files unchanged. This note is for repository context only.
