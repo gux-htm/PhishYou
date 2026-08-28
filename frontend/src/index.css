@@ -22,6 +22,8 @@
   --py-danger: #FF4757;
   --py-info: #5B9EFF;
   --py-insight: #A78BFA;
+  --py-signal-red: #FF365F;
+  --py-signal-red-soft: #FF718B;
 }
 
 html { scroll-behavior: smooth; background: var(--py-bg); }
@@ -55,6 +57,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   background-size: 56px 56px;
   mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
 }
+.py-hud-grid {
+  background-image: linear-gradient(rgba(255,54,95,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(255,54,95,.045) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,.75) 48%, transparent 100%);
+}
 .py-glass { background: rgba(21,25,31,.76); border: 1px solid rgba(61,72,96,.65); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
 .py-hud-panel {
   background: linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
@@ -65,7 +72,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .py-sheen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,.04) 45%, transparent 62%); transform: translateX(-120%); transition: transform 700ms cubic-bezier(.16,1,.3,1); }
 .py-sheen:hover::after { transform: translateX(120%); }
 
-/* A restrained cinematic layer: motion communicates changing state without turning the product into a hacker cliché. */
 .py-signal-frame { position: relative; isolation: isolate; }
 .py-signal-frame::before {
   content: "";
@@ -111,13 +117,31 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .py-status-dot { position: relative; }
 .py-status-dot::after { content: ""; position: absolute; inset: -5px; border-radius: 999px; border: 1px solid currentColor; opacity: .3; animation: pyStatusRing 2.4s ease-out infinite; }
 
+/* Cinematic marketing primitives inspired by the supplied reference: structured HUD framing, not a generic hacker dashboard. */
+.py-reveal { animation: pyReveal 760ms cubic-bezier(.16,1,.3,1) both; }
+.py-reveal-delay { animation-delay: 130ms; }
+.py-hud-frame { position: relative; box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+.py-hud-frame::before, .py-hud-frame::after { content: ""; position: absolute; width: 24px; height: 24px; pointer-events: none; }
+.py-hud-frame::before { left: -1px; top: -1px; border-left: 1px solid rgba(255,54,95,.8); border-top: 1px solid rgba(255,54,95,.8); }
+.py-hud-frame::after { bottom: -1px; right: -1px; border-bottom: 1px solid rgba(255,54,95,.8); border-right: 1px solid rgba(255,54,95,.8); }
+.py-red-orbit { animation: pyRedOrbit 18s linear infinite; }
+.py-red-orbit-reverse { animation: pyRedOrbit 26s linear infinite reverse; }
+.py-red-scan { animation: pyRedScan 7s linear infinite; transform-origin: center; }
+.py-float-red { animation: pyFloatRed 6s ease-in-out infinite; }
+.py-red-halo { animation: pyHalo 5.5s ease-in-out infinite; }
+
 @keyframes pyFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pyReveal { from { opacity: 0; transform: translateY(24px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
 @keyframes pyPulseSoft { 0%,100% { opacity:.78; } 50% { opacity:1; } }
 @keyframes pyPulseLive { 0%,100% { opacity:.72; box-shadow:0 0 0 0 rgba(47,217,199,.20); } 50% { opacity:1; box-shadow:0 0 0 7px rgba(47,217,199,0); } }
 @keyframes pyScanline { from { transform: translateY(-40%); } to { transform: translateY(380%); } }
 @keyframes pyStatusRing { 0% { transform: scale(.7); opacity:.5; } 75%,100% { transform: scale(1.55); opacity:0; } }
 @keyframes pySignalSweep { 0%, 62% { transform: translateX(-105%); opacity: 0; } 68% { opacity: 1; } 86%, 100% { transform: translateX(105%); opacity: 0; } }
 @keyframes pyFloatSubtle { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-7px,0); } }
+@keyframes pyRedOrbit { from { transform: rotateZ(0deg) rotateX(65deg); } to { transform: rotateZ(360deg) rotateX(65deg); } }
+@keyframes pyRedScan { 0% { transform: rotate(0deg); opacity: .12; } 45% { opacity: .58; } 100% { transform: rotate(360deg); opacity: .12; } }
+@keyframes pyFloatRed { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-10px,0); } }
+@keyframes pyHalo { 0%,100% { opacity:.6; transform: translate(-50%,-50%) scale(.96); } 50% { opacity:1; transform: translate(-50%,-50%) scale(1.05); } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
