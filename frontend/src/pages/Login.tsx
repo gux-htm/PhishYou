@@ -1,6 +1,6 @@
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, Eye, EyeOff, Fingerprint, Loader2, Lock, Mail, ShieldCheck, Terminal } from 'lucide-react'
+import { SignInFlow, SignInStep } from '../components/ui/sign-in-flow-1'
 
 const authSession: { token: string | null; email: string | null } = { token: null, email: null }
 
@@ -15,48 +15,33 @@ async function verifyMfa(code: string) {
   finally { window.clearTimeout(timer) }
 }
 
-function SignalScene() {
-  return <aside className="relative hidden min-h-screen overflow-hidden bg-[#090307] lg:block">
-    <style>{`
-      @keyframes pyAuthSweep { from { transform: rotate(-18deg); opacity:.18 } 45% { opacity:.7 } to { transform: rotate(342deg); opacity:.18 } }
-      @keyframes pyAuthPulse { 0%,100% { transform:scale(.96); opacity:.45 } 50% { transform:scale(1.03); opacity:.9 } }
-      @keyframes pyAuthBlink { 0%,45% { opacity:1 } 46%,100% { opacity:.22 } }
-      .py-auth-sweep { animation:pyAuthSweep 12s linear infinite; transform-origin:50% 50%; }
-      .py-auth-pulse { animation:pyAuthPulse 5s ease-in-out infinite; }
-      .py-auth-blink { animation:pyAuthBlink 1.7s steps(2,end) infinite; }
-      @media (prefers-reduced-motion:reduce){.py-auth-sweep,.py-auth-pulse,.py-auth-blink{animation:none!important}}
-    `}</style>
-    <div className="absolute inset-0 opacity-70 [background-image:linear-gradient(rgba(255,54,95,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,54,95,.04)_1px,transparent_1px)] [background-size:64px_64px]" />
-    <div className="absolute left-[14%] top-[16%] h-[34rem] w-[34rem] rounded-full border border-[#ff365f]/10" /><div className="absolute left-[22%] top-[24%] h-[25rem] w-[25rem] rounded-full border border-[#ff365f]/15" />
-    <div className="py-auth-sweep absolute left-[15%] top-[17%] h-[33rem] w-[33rem] rounded-full border-t border-[#ff365f]/70" /><div className="py-auth-pulse absolute left-[28%] top-[36%] h-24 w-24 rounded-full bg-[#ff365f]/[.08] blur-3xl" />
-    <div className="absolute left-14 right-14 top-16 flex items-center justify-between border-b border-[#ff365f]/20 pb-5"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center border border-[#ff365f]/35 bg-[#ff365f]/[.08] text-[#ff6a76]"><ShieldCheck className="h-5 w-5" /></span><div><div className="font-mono text-sm font-black tracking-[.3em] text-white">PHISHYOU</div><div className="mt-1 font-mono text-[9px] uppercase tracking-[.2em] text-[#7e626b]">Human threat intelligence</div></div></div><span className="font-mono text-[9px] uppercase tracking-[.2em] text-[#ff6a76]">SYS/ACCESS_01</span></div>
-    <div className="absolute left-14 top-[30%] max-w-xl"><div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.22em] text-[#ff6a76]"><span className="py-auth-blink h-2 w-2 bg-[#ff365f]" /> Identity gateway / authorized operators</div><h1 className="mt-7 text-6xl font-black leading-[.9] tracking-[-.065em] text-[#f5f1f2]">ENTER THE<br /><span className="text-[#ff4d67]">SIGNAL LAYER.</span></h1><p className="mt-7 max-w-md text-sm leading-7 text-[#9c8b91]">PhishYou turns authorized social-engineering simulations into behavioral intelligence your security team can act on.</p></div>
-    <div className="absolute bottom-20 left-14 right-14 grid grid-cols-3 gap-3"><div className="border border-white/[.07] bg-black/20 p-4"><div className="font-mono text-[9px] uppercase tracking-[.16em] text-[#73545d]">Scope</div><div className="mt-2 text-sm font-semibold text-white/80">Authorized</div></div><div className="border border-white/[.07] bg-black/20 p-4"><div className="font-mono text-[9px] uppercase tracking-[.16em] text-[#73545d]">Controls</div><div className="mt-2 text-sm font-semibold text-white/80">Observable</div></div><div className="border border-white/[.07] bg-black/20 p-4"><div className="font-mono text-[9px] uppercase tracking-[.16em] text-[#73545d]">Audit</div><div className="mt-2 text-sm font-semibold text-white/80">Traceable</div></div></div>
-    <div className="absolute bottom-8 left-14 right-14 flex justify-between font-mono text-[9px] uppercase tracking-[.18em] text-[#5f444c]"><span>Signal channel encrypted</span><span>VIBE_GRAPHIC_SYSTEM_2026</span></div>
-  </aside>
-}
-
 export default function Login() {
-  const navigate = useNavigate(); const [step, setStep] = useState<'credentials' | 'mfa'>('credentials'); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [showPassword, setShowPassword] = useState(false); const [otp, setOtp] = useState(''); const [loading, setLoading] = useState(false); const [error, setError] = useState<string | null>(null); const otpRefs = useRef<(HTMLInputElement | null)[]>([])
-  const completeSignIn = (token: string) => { authSession.token = token; authSession.email = email; navigate('/dashboard', { replace: true }) }
-  const handleSubmit = async (event: FormEvent) => { event.preventDefault(); setError(null); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setError('Enter a valid organization email address.'); if (password.length < 6) return setError('Password must be at least 6 characters.'); setLoading(true); try { const response = await requestToken(email, password); if (response.mfa_required) setStep('mfa'); else completeSignIn(response.access_token) } catch { await new Promise((resolve) => setTimeout(resolve, 600)); setStep('mfa') } finally { setLoading(false) } }
-  const verifyCode = async (code: string) => { setLoading(true); setError(null); try { const response = await verifyMfa(code); completeSignIn(response.access_token) } catch { await new Promise((resolve) => setTimeout(resolve, 500)); completeSignIn(`demo.${btoa(email).slice(0, 12)}`) } finally { setLoading(false) } }
-  useEffect(() => { if (step === 'mfa' && otp.length === 6 && !loading) verifyCode(otp) }, [otp, step])
-  const inputClass = 'w-full border border-white/[.11] bg-[#0b0d12] px-11 py-4 text-sm text-white placeholder:text-[#58606c] outline-none transition focus:border-[#ff4757]/75 focus:ring-4 focus:ring-[#ff4757]/[.08]'
+  const navigate = useNavigate()
+  const [step, setStep] = useState<SignInStep>('credentials')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [otp, setOtp] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  return <div className="min-h-screen bg-[#090a0e] text-white lg:grid lg:grid-cols-[1.08fr_.92fr]"><SignalScene />
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 py-10 sm:px-12"><div className="pointer-events-none absolute inset-0 [background-image:linear-gradient(rgba(255,255,255,.018)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.014)_1px,transparent_1px)] [background-size:52px_52px]" /><div className="pointer-events-none absolute right-[-15rem] top-[10%] h-[32rem] w-[32rem] rounded-full bg-[#ff365f]/[.035] blur-[140px]" />
-      <div className="relative w-full max-w-md"><button onClick={() => navigate('/')} className="mb-10 inline-flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[.16em] text-[#7d838d] hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Return to overview</button>
-        <div className="relative border border-white/[.09] bg-[#0d1016]/90 p-6 shadow-[0_30px_90px_rgba(0,0,0,.38)] backdrop-blur-xl sm:p-8"><div className="absolute left-0 top-0 h-9 w-9 border-l border-t border-[#ff4757]" /><div className="absolute bottom-0 right-0 h-9 w-9 border-b border-r border-[#ff4757]" />
-          <div className="mb-7 flex items-center justify-between border-b border-white/[.06] pb-5"><div className="flex items-center gap-2"><Terminal className="h-4 w-4 text-[#ff6a76]" /><span className="font-mono text-[9px] font-bold uppercase tracking-[.2em] text-[#ff6a76]">Operator authentication</span></div><span className="font-mono text-[9px] text-[#59616d]">01 // 02</span></div>
-          {step === 'credentials' ? <div className="py-fade-up"><h2 className="text-4xl font-black tracking-[-.055em] text-[#f7f4f5]">Identify yourself.</h2><p className="mt-3 text-sm leading-6 text-[#8c949f]">Authenticate to enter your organization’s intelligence workspace.</p>
-            <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5"><label className="block"><span className="mb-2 block font-mono text-[9px] font-bold uppercase tracking-[.18em] text-[#7e8792]">Organization email</span><div className="relative"><Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#69717c]" /><input type="email" autoComplete="email" placeholder="security@company.com" value={email} onChange={(event) => setEmail(event.target.value)} className={inputClass} /></div></label>
-              <label className="block"><span className="mb-2 block font-mono text-[9px] font-bold uppercase tracking-[.18em] text-[#7e8792]">Password</span><div className="relative"><Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#69717c]" /><input type={showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="••••••••" value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} /><button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-[#69717c] hover:text-white" aria-label={showPassword ? 'Hide password' : 'Show password'}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div></label>
-              {error && <div role="alert" className="flex gap-2 border border-[#ff4757]/25 bg-[#ff4757]/[.07] p-3 text-sm text-[#ff9aa4]"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />{error}</div>}
-              <button type="submit" disabled={loading} className="group flex min-h-13 w-full items-center justify-center gap-2 border border-[#ff4757]/40 bg-[#ff4757] px-5 py-4 text-xs font-black uppercase tracking-[.16em] text-[#180508] shadow-[0_16px_38px_rgba(255,71,87,.16)] transition hover:bg-[#ff6472] disabled:opacity-60">{loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Authenticating</> : <>Enter command layer <ShieldCheck className="h-4 w-4 transition group-hover:translate-x-0.5" /></>}</button></form><p className="mt-6 text-center text-[11px] leading-5 text-[#5d6570]">Need access? Contact your PhishYou organization administrator.</p></div>
-          : <div className="py-fade-up"><button onClick={() => { setStep('credentials'); setOtp(''); setError(null) }} className="mb-6 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.14em] text-[#7d838d] hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Change identity</button><div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center border border-[#ff4757]/25 bg-[#ff4757]/[.06] text-[#ff6a76]"><Fingerprint className="h-5 w-5" /></span><div><h2 className="text-3xl font-black tracking-[-.045em]">Verify identity.</h2><p className="mt-1 text-sm text-[#8c949f]">Enter your six-digit authenticator code.</p></div></div><div className="mt-8 grid grid-cols-6 gap-2">{Array.from({ length: 6 }).map((_, index) => <input key={index} ref={(element) => { otpRefs.current[index] = element }} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={1} value={otp[index] ?? ''} onChange={(event) => { const digit = event.target.value.replace(/\D/g, '').slice(-1); setOtp((current) => { const next = current.padEnd(index + 1, ' '); return (next.slice(0, index) + digit + next.slice(index + 1)).replace(/\s+$/, '') }); if (digit) otpRefs.current[index + 1]?.focus() }} onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => { if (event.key === 'Backspace' && !otp[index]) otpRefs.current[index - 1]?.focus() }} disabled={loading} className="h-14 border border-white/[.1] bg-[#090b10] text-center font-mono text-xl font-bold outline-none transition focus:border-[#ff4757] focus:ring-4 focus:ring-[#ff4757]/[.08] disabled:opacity-50" />)}</div>{error && <div role="alert" className="mt-5 flex gap-2 border border-[#ff4757]/25 bg-[#ff4757]/[.07] p-3 text-sm text-[#ff9aa4]"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />{error}</div>}<p className="mt-6 text-xs leading-5 text-[#5d6570]">For the demo environment, any six-digit code completes verification when the backend is unavailable.</p></div>}
-        </div>
-      </div>
-    </main>
-  </div>
+  const completeSignIn = (token: string) => { authSession.token = token; authSession.email = email; navigate('/dashboard', { replace: true }) }
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault(); setError(null)
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setError('Enter a valid organization email address.')
+    if (password.length < 6) return setError('Password must be at least 6 characters.')
+    setLoading(true)
+    try { const response = await requestToken(email, password); if (response.mfa_required) setStep('mfa'); else completeSignIn(response.access_token) }
+    catch { await new Promise((resolve) => setTimeout(resolve, 600)); setStep('mfa') }
+    finally { setLoading(false) }
+  }
+  const verifyCode = async (code: string) => {
+    if (code.length !== 6) return
+    setLoading(true); setError(null)
+    try { const response = await verifyMfa(code); completeSignIn(response.access_token) }
+    catch { await new Promise((resolve) => setTimeout(resolve, 500)); completeSignIn(`demo.${btoa(email).slice(0, 12)}`) }
+    finally { setLoading(false) }
+  }
+  useEffect(() => { if (step === 'mfa' && otp.length === 6 && !loading) verifyCode(otp) }, [otp, step])
+
+  return <SignInFlow step={step} email={email} password={password} otp={otp} loading={loading} error={error} onEmailChange={setEmail} onPasswordChange={setPassword} onSubmit={handleSubmit} onOtpChange={setOtp} onVerify={verifyCode} onBackToCredentials={() => { setStep('credentials'); setOtp(''); setError(null) }} onReturn={() => navigate('/')} />
 }
