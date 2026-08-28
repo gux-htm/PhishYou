@@ -3,6 +3,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
+import './pages/dashboard-command.css';
 
 const root = document.getElementById('root');
 
