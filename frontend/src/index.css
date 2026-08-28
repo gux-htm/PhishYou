@@ -36,99 +36,104 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
-
 * { box-sizing: border-box; }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
-button, a {
-  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
-  transition-duration: 200ms;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-}
+button, a { transition-property: color, background-color, border-color, box-shadow, transform, opacity; transition-duration: 200ms; transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--py-teal); outline-offset: 3px; }
 ::selection { background: rgba(47, 217, 199, 0.25); color: var(--py-text); }
 
-.py-grid-noise {
-  background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: linear-gradient(to bottom, black 0%, transparent 85%);
-}
-.py-grid-signal {
-  background-image: linear-gradient(rgba(255,71,87,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,71,87,.06) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
-}
-.py-hud-grid {
-  background-image: linear-gradient(rgba(255,54,95,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(255,54,95,.045) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,.75) 48%, transparent 100%);
-}
+.py-grid-noise { background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 40px 40px; mask-image: linear-gradient(to bottom, black 0%, transparent 85%); }
+.py-grid-signal { background-image: linear-gradient(rgba(255,71,87,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,71,87,.06) 1px, transparent 1px); background-size: 56px 56px; mask-image: radial-gradient(circle at center, black 0%, transparent 72%); }
+.py-hud-grid { background-image: linear-gradient(rgba(255,54,95,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(255,54,95,.045) 1px, transparent 1px); background-size: 72px 72px; mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,.75) 48%, transparent 100%); }
 .py-glass { background: rgba(21,25,31,.76); border: 1px solid rgba(61,72,96,.65); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
-.py-hud-panel {
-  background: linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
-  border: 1px solid rgba(255,255,255,.075);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 24px 70px rgba(0,0,0,.22);
-}
+.py-hud-panel { background: linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.012)); border: 1px solid rgba(255,255,255,.075); box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 24px 70px rgba(0,0,0,.22); }
 .py-sheen { position: relative; overflow: hidden; }
 .py-sheen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,.04) 45%, transparent 62%); transform: translateX(-120%); transition: transform 700ms cubic-bezier(.16,1,.3,1); }
 .py-sheen:hover::after { transform: translateX(120%); }
-
 .py-signal-frame { position: relative; isolation: isolate; }
-.py-signal-frame::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  z-index: -1;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(115deg, rgba(47,217,199,.42), transparent 28%, transparent 72%, rgba(91,158,255,.28));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: .65;
-}
-.py-signal-frame::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(105deg, transparent 30%, rgba(47,217,199,.055) 48%, transparent 64%);
-  transform: translateX(-100%);
-  animation: pySignalSweep 8s cubic-bezier(.16,1,.3,1) infinite;
-}
-.py-topology {
-  background-image:
-    radial-gradient(circle at 15% 20%, rgba(47,217,199,.13) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 70% 30%, rgba(91,158,255,.12) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 35% 75%, rgba(167,139,250,.10) 0 1px, transparent 1.5px);
-  background-size: 140px 120px, 190px 160px, 170px 150px;
-}
+.py-signal-frame::before { content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; padding: 1px; background: linear-gradient(115deg, rgba(47,217,199,.42), transparent 28%, transparent 72%, rgba(91,158,255,.28)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: .65; }
+.py-signal-frame::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background: linear-gradient(105deg, transparent 30%, rgba(47,217,199,.055) 48%, transparent 64%); transform: translateX(-100%); animation: pySignalSweep 8s cubic-bezier(.16,1,.3,1) infinite; }
+.py-topology { background-image: radial-gradient(circle at 15% 20%, rgba(47,217,199,.13) 0 1px, transparent 1.5px), radial-gradient(circle at 70% 30%, rgba(91,158,255,.12) 0 1px, transparent 1.5px), radial-gradient(circle at 35% 75%, rgba(167,139,250,.10) 0 1px, transparent 1.5px); background-size: 140px 120px, 190px 160px, 170px 150px; }
 .py-float-subtle { animation: pyFloatSubtle 7s ease-in-out infinite; }
 .py-fade-up { animation: pyFadeUp 560ms cubic-bezier(.16,1,.3,1) both; }
-.py-fade-up-delay-1 { animation-delay: 80ms; }
-.py-fade-up-delay-2 { animation-delay: 160ms; }
-.py-fade-up-delay-3 { animation-delay: 240ms; }
-.py-fade-up-delay-4 { animation-delay: 320ms; }
-.py-pulse-soft { animation: pyPulseSoft 2.4s ease-in-out infinite; }
-.py-pulse-live { animation: pyPulseLive 1.8s ease-in-out infinite; }
-.py-scanline { position: relative; overflow: hidden; }
-.py-scanline::before { content: ""; position: absolute; inset: -30% 0 auto; height: 35%; pointer-events: none; background: linear-gradient(to bottom, transparent, rgba(47,217,199,.06), transparent); animation: pyScanline 7s linear infinite; }
-.py-status-dot { position: relative; }
-.py-status-dot::after { content: ""; position: absolute; inset: -5px; border-radius: 999px; border: 1px solid currentColor; opacity: .3; animation: pyStatusRing 2.4s ease-out infinite; }
+.py-fade-up-delay-1 { animation-delay: 80ms; }.py-fade-up-delay-2 { animation-delay: 160ms; }.py-fade-up-delay-3 { animation-delay: 240ms; }.py-fade-up-delay-4 { animation-delay: 320ms; }
+.py-pulse-soft { animation: pyPulseSoft 2.4s ease-in-out infinite; }.py-pulse-live { animation: pyPulseLive 1.8s ease-in-out infinite; }
+.py-scanline { position: relative; overflow: hidden; }.py-scanline::before { content: ""; position: absolute; inset: -30% 0 auto; height: 35%; pointer-events: none; background: linear-gradient(to bottom, transparent, rgba(47,217,199,.06), transparent); animation: pyScanline 7s linear infinite; }
+.py-status-dot { position: relative; }.py-status-dot::after { content: ""; position: absolute; inset: -5px; border-radius: 999px; border: 1px solid currentColor; opacity: .3; animation: pyStatusRing 2.4s ease-out infinite; }
 
 /* Cinematic marketing primitives inspired by the supplied reference: structured HUD framing, not a generic hacker dashboard. */
-.py-reveal { animation: pyReveal 760ms cubic-bezier(.16,1,.3,1) both; }
-.py-reveal-delay { animation-delay: 130ms; }
-.py-hud-frame { position: relative; box-shadow: 0 30px 80px rgba(0,0,0,.35); }
-.py-hud-frame::before, .py-hud-frame::after { content: ""; position: absolute; width: 24px; height: 24px; pointer-events: none; }
-.py-hud-frame::before { left: -1px; top: -1px; border-left: 1px solid rgba(255,54,95,.8); border-top: 1px solid rgba(255,54,95,.8); }
-.py-hud-frame::after { bottom: -1px; right: -1px; border-bottom: 1px solid rgba(255,54,95,.8); border-right: 1px solid rgba(255,54,95,.8); }
-.py-red-orbit { animation: pyRedOrbit 18s linear infinite; }
-.py-red-orbit-reverse { animation: pyRedOrbit 26s linear infinite reverse; }
-.py-red-scan { animation: pyRedScan 7s linear infinite; transform-origin: center; }
-.py-float-red { animation: pyFloatRed 6s ease-in-out infinite; }
-.py-red-halo { animation: pyHalo 5.5s ease-in-out infinite; }
+.py-reveal { animation: pyReveal 760ms cubic-bezier(.16,1,.3,1) both; }.py-reveal-delay { animation-delay: 130ms; }
+.py-hud-frame { position: relative; box-shadow: 0 30px 80px rgba(0,0,0,.35); }.py-hud-frame::before, .py-hud-frame::after { content: ""; position: absolute; width: 24px; height: 24px; pointer-events: none; }.py-hud-frame::before { left: -1px; top: -1px; border-left: 1px solid rgba(255,54,95,.8); border-top: 1px solid rgba(255,54,95,.8); }.py-hud-frame::after { bottom: -1px; right: -1px; border-bottom: 1px solid rgba(255,54,95,.8); border-right: 1px solid rgba(255,54,95,.8); }
+.py-red-orbit { animation: pyRedOrbit 18s linear infinite; }.py-red-orbit-reverse { animation: pyRedOrbit 26s linear infinite reverse; }.py-red-scan { animation: pyRedScan 7s linear infinite; transform-origin: center; }.py-float-red { animation: pyFloatRed 6s ease-in-out infinite; }.py-red-halo { animation: pyHalo 5.5s ease-in-out infinite; }
+
+/* ------------------------------------------------------------------
+   Signal-surface treatment: Live Campaign Monitor + Integrations
+   The selectors intentionally key off stable ARIA labels so implemented
+   workflows keep their structure and behaviour while gaining the new shell.
+   ------------------------------------------------------------------ */
+body:has([aria-label="Live engagements"]) { background: #09070a; }
+body:has([aria-label="Live engagements"]) main {
+  position: relative;
+  isolation: isolate;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,54,95,.10), transparent 42%), linear-gradient(180deg,#10060b 0%,#090a0e 45%,#08090c 100%);
+}
+body:has([aria-label="Live engagements"]) main::before {
+  content:""; position:fixed; inset:48px 0 0; z-index:-1; pointer-events:none; opacity:.8;
+  background-image: linear-gradient(rgba(255,54,95,.045) 1px,transparent 1px), linear-gradient(90deg,rgba(255,54,95,.035) 1px,transparent 1px);
+  background-size:72px 72px; mask-image:linear-gradient(to bottom,black,transparent 82%);
+}
+body:has([aria-label="Live engagements"]) header {
+  background: linear-gradient(90deg,rgba(16,6,11,.98),rgba(24,7,13,.94),rgba(8,10,14,.98)) !important;
+  border-color: rgba(255,54,95,.22) !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,.34), inset 0 -1px 0 rgba(255,54,95,.08);
+}
+body:has([aria-label="Live engagements"]) header::after { content:"LIVE OPERATIONS // SIGNAL UPLINK ACTIVE"; margin-left:10px; color:rgba(255,113,139,.58); font:600 9px/1 ui-monospace,SFMono-Regular,monospace; letter-spacing:.22em; white-space:nowrap; }
+body:has([aria-label="Live engagements"]) [aria-label="Live engagements"] {
+  border-color: rgba(255,54,95,.26) !important;
+  border-radius: 2px !important;
+  background: linear-gradient(135deg,rgba(24,10,15,.96),rgba(12,15,21,.98)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 30px 80px rgba(0,0,0,.28), 0 0 0 1px rgba(255,54,95,.035);
+}
+body:has([aria-label="Live engagements"]) [aria-label="Live engagements"] > div:first-child { border-color:rgba(255,54,95,.18) !important; background:linear-gradient(90deg,rgba(255,54,95,.055),transparent 65%); }
+body:has([aria-label="Live engagements"]) [role="tablist"] { border:1px solid rgba(255,255,255,.06); background:rgba(0,0,0,.28) !important; border-radius:2px !important; }
+body:has([aria-label="Live engagements"]) [role="tab"][aria-selected="true"] { background:rgba(255,54,95,.13) !important; color:#ff718b !important; box-shadow:inset 0 -1px 0 #ff365f; }
+body:has([aria-label="Live engagements"]) [aria-label="Live engagements"] button[class*="border-b"]:hover { background:linear-gradient(90deg,rgba(255,54,95,.06),transparent) !important; }
+body:has([aria-label="Live analytics"]) > div { border-color:rgba(255,54,95,.18) !important; border-radius:2px !important; background:linear-gradient(145deg,rgba(24,9,14,.92),rgba(12,15,20,.96)) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 18px 45px rgba(0,0,0,.2); position:relative; overflow:hidden; }
+body:has([aria-label="Live analytics"]) > div::before { content:""; position:absolute; left:0; top:0; width:42px; height:1px; background:#ff365f; box-shadow:0 0 18px rgba(255,54,95,.8); }
+body:has([aria-label="Live engagements"]) [aria-label="Live analytics"] { position:relative; }
+body:has([aria-label="Live engagements"]) [aria-label="Live analytics"]::before { content:"SIGNAL ANALYSIS"; display:block; margin:0 0 10px 2px; color:rgba(255,113,139,.55); font:600 9px/1 ui-monospace,SFMono-Regular,monospace; letter-spacing:.22em; }
+body:has([aria-label="Live engagements"]) .font-mono { letter-spacing:.01em; }
+body:has([aria-label="Live engagements"]) .bg-blue-600\/20 { background:rgba(255,54,95,.10) !important; border-color:rgba(255,54,95,.28) !important; }
+body:has([aria-label="Live engagements"]) .bg-\[\#1C2333\] { background:rgba(8,12,17,.72) !important; border-color:rgba(255,255,255,.08) !important; }
+
+body:has([aria-label="Twilio integration"]) { background:radial-gradient(ellipse at 50% 0%,rgba(255,54,95,.09),transparent 32%),#090a0e; }
+body:has([aria-label="Twilio integration"]) .max-w-7xl {
+  max-width: 92rem !important; padding-top:3rem !important; position:relative;
+}
+body:has([aria-label="Twilio integration"]) .max-w-7xl::before {
+  content:"SYSTEM INTEGRATIONS // DELIVERY + INTELLIGENCE LAYER"; display:block; color:rgba(255,113,139,.62); font:600 10px/1 ui-monospace,SFMono-Regular,monospace; letter-spacing:.22em; margin-bottom:12px;
+}
+body:has([aria-label="Twilio integration"]) .max-w-7xl > header {
+  position:relative; padding:24px 28px 26px; border:1px solid rgba(255,54,95,.25); border-radius:2px;
+  background:linear-gradient(110deg,rgba(255,54,95,.07),rgba(18,13,19,.92) 45%,rgba(8,12,17,.92)); overflow:hidden;
+}
+body:has([aria-label="Twilio integration"]) .max-w-7xl > header::before { content:"01"; position:absolute; right:24px; top:18px; color:rgba(255,54,95,.14); font:800 84px/1 ui-monospace,SFMono-Regular,monospace; }
+body:has([aria-label="Twilio integration"]) .max-w-7xl > header h1 { position:relative; font-size:clamp(2rem,4vw,3.8rem) !important; letter-spacing:-.055em; text-transform:uppercase; }
+body:has([aria-label="Twilio integration"]) .max-w-7xl > header p { position:relative; max-width:58ch; }
+body:has([aria-label="Twilio integration"]) section[aria-label] {
+  position:relative; border-color:rgba(255,255,255,.08) !important; border-radius:2px !important;
+  background:linear-gradient(145deg,rgba(20,13,18,.94),rgba(11,14,19,.96)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 20px 55px rgba(0,0,0,.2); overflow:hidden;
+}
+body:has([aria-label="Twilio integration"]) section[aria-label]::before { content:""; position:absolute; left:0; top:0; width:54px; height:1px; background:#ff365f; box-shadow:0 0 22px rgba(255,54,95,.85); }
+body:has([aria-label="Twilio integration"]) section[aria-label]::after { content:"● LINK STATUS MONITORED"; position:absolute; right:20px; top:18px; color:rgba(47,217,199,.45); font:600 8px/1 ui-monospace,SFMono-Regular,monospace; letter-spacing:.16em; pointer-events:none; }
+body:has([aria-label="Twilio integration"]) input, body:has([aria-label="Twilio integration"]) select { border-radius:2px !important; background:rgba(4,7,11,.54) !important; border-color:rgba(255,255,255,.09) !important; }
+body:has([aria-label="Twilio integration"]) input:focus, body:has([aria-label="Twilio integration"]) select:focus { border-color:rgba(255,54,95,.7) !important; box-shadow:0 0 0 3px rgba(255,54,95,.10) !important; }
+body:has([aria-label="Twilio integration"]) table { background:rgba(0,0,0,.13); }
+body:has([aria-label="Twilio integration"]) th { background:rgba(255,54,95,.055) !important; color:rgba(255,255,255,.5) !important; }
+body:has([aria-label="Twilio integration"]) tr:hover { background:linear-gradient(90deg,rgba(255,54,95,.06),transparent) !important; }
+body:has([aria-label="Twilio integration"]) button[class*="bg-[#2FD9C7]"] { background:linear-gradient(135deg,#ff365f,#e51d48) !important; color:white !important; box-shadow:0 8px 24px rgba(255,54,95,.18); }
+body:has([aria-label="Twilio integration"]) button[class*="bg-[#2FD9C7]"]:hover { box-shadow:0 10px 30px rgba(255,54,95,.3); }
 
 @keyframes pyFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes pyReveal { from { opacity: 0; transform: translateY(24px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
@@ -143,6 +148,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @keyframes pyFloatRed { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-10px,0); } }
 @keyframes pyHalo { 0%,100% { opacity:.6; transform: translate(-50%,-50%) scale(.96); } 50% { opacity:1; transform: translate(-50%,-50%) scale(1.05); } }
 
+@media (max-width: 900px) {
+  body:has([aria-label="Live engagements"]) header::after { display:none; }
+  body:has([aria-label="Twilio integration"]) section[aria-label]::after { display:none; }
+}
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
