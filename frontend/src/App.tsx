@@ -1,5 +1,6 @@
 // Hello World
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import './theme.css';
 import { ThemeProvider } from './context/ThemeContext';
 import { SettingsAppearancePanel, ThemeToggle } from './components/ThemeControls';
 import { Landing } from './pages/Landing';
