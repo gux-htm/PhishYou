@@ -13,6 +13,8 @@ import Targets from './pages/Targets';
 import TargetDetail from './pages/TargetDetail';
 import Users from './pages/Users';
 import NotFound from './pages/NotFound';
+import CreateCampaign from './pages/CreateCampaign';
+import CampaignWorkspace from './pages/CampaignWorkspace';
 
 export default function App() {
   return (
@@ -24,6 +26,8 @@ export default function App() {
 
         {/* Existing product surfaces — wired so the completed UI is reachable. */}
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/campaigns/new" element={<CreateCampaign />} />
+        <Route path="/campaigns/:id" element={<CampaignWorkspace />} />
         <Route path="/targets" element={<Targets />} />
         <Route path="/targets/:id" element={<TargetDetail />} />
         <Route path="/reports" element={<Reports />} />
