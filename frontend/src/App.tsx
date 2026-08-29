@@ -15,6 +15,7 @@ import Users from './pages/Users';
 import NotFound from './pages/NotFound';
 import CreateCampaign from './pages/CreateCampaign';
 import CampaignWorkspace from './pages/CampaignWorkspace';
+import AgentTools from './pages/AgentTools';
 
 export default function App() {
   return (
@@ -24,15 +25,18 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Existing product surfaces — wired so the completed UI is reachable. */}
+        {/* Product workspace */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/campaigns/new" element={<CreateCampaign />} />
         <Route path="/campaigns/:id" element={<CampaignWorkspace />} />
+        <Route path="/campaigns/:id/live" element={<LiveCampaignMonitor />} />
+        <Route path="/tools" element={<AgentTools />} />
+
+        {/* Supporting product surfaces */}
         <Route path="/targets" element={<Targets />} />
         <Route path="/targets/:id" element={<TargetDetail />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/learning" element={<Learning />} />
-        <Route path="/campaigns/:id/live" element={<LiveCampaignMonitor />} />
         <Route path="/organization" element={<Organization />} />
         <Route path="/users" element={<Users />} />
         <Route path="/settings" element={<Settings />} />
