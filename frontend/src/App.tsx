@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AppShell } from './components/AppShell';
@@ -17,7 +18,7 @@ import NotFound from './pages/NotFound';
 import CreateCampaign from './pages/CreateCampaign';
 import CampaignWorkspace from './pages/CampaignWorkspace';
 
-const product = (node: React.ReactNode) => <AppShell>{node}</AppShell>;
+const product = (node: ReactNode) => <AppShell>{node}</AppShell>;
 
 export default function App() {
   return <ThemeProvider><BrowserRouter><Routes>
