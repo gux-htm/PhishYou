@@ -14,3 +14,28 @@
 .py-radar-sweep { background:conic-gradient(from 230deg, transparent 0deg, transparent 260deg, rgba(255,54,95,.26) 330deg, rgba(255,54,95,.02) 360deg); mask:radial-gradient(circle, transparent 0 4%, #000 5% 100%); animation:pyRadarSweep 6.5s linear infinite; }
 @keyframes pyRadarSweep { to { transform:rotate(360deg); } }
 @media (prefers-reduced-motion:reduce){.py-radar-sweep{animation:none;}}
+
+/* Light mode overrides */
+:root[data-theme='light'] .py-command-card {
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: var(--shadow);
+}
+:root[data-theme='light'] .py-command-card::before {
+  background: linear-gradient(120deg, rgba(216,60,87,.04), transparent 24%, transparent 72%, rgba(19,143,132,.03));
+}
+:root[data-theme='light'] .py-command-hero {
+  background: linear-gradient(130deg, var(--surface), color-mix(in srgb, var(--surface) 85%, var(--accent-soft)));
+  border-color: var(--line);
+  box-shadow: var(--shadow);
+}
+:root[data-theme='light'] .py-command-hero::before {
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+:root[data-theme='light'] .py-command-hero::after {
+  border-color: var(--teal);
+}
+:root[data-theme='light'] .py-radar {
+  background: radial-gradient(circle, rgba(216,60,87,.08) 0 2%, transparent 3% 22%, var(--surface-2) 23% 24%, transparent 25% 45%, var(--surface-2) 46% 47%, transparent 48% 69%, var(--surface-2) 70% 71%, transparent 72%);
+  box-shadow: inset 0 0 45px rgba(216,60,87,.04), 0 0 80px rgba(216,60,87,.05);
+}
