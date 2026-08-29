@@ -1,0 +1,150 @@
+/* PhishYou theme layer — one semantic system, two operating environments. */
+html.py-theme-light {
+  --py-bg: #f4f6f8;
+  --py-surface: #ffffff;
+  --py-elevated: #f8fafb;
+  --py-subtle: #e9edf1;
+  --py-border: #d6dce2;
+  --py-border-light: #c5ccd5;
+  --py-text: #111722;
+  --py-text-secondary: #52606f;
+  --py-text-tertiary: #728092;
+  --py-text-muted: #98a2ae;
+  color-scheme: light;
+  background: #f4f6f8;
+}
+
+body.py-theme-light {
+  background:
+    radial-gradient(circle at 75% -10%, rgba(255,54,95,.07), transparent 26rem),
+    linear-gradient(180deg, #f9fafb 0%, #f2f4f6 100%);
+  color: #111722;
+}
+
+/* Global surface normalization. Exact arbitrary Tailwind colors are overridden
+   here so existing implemented pages inherit the light environment without
+   rewriting every product component. */
+body.py-theme-light main,
+body.py-theme-light [class*="bg-[#090"],
+body.py-theme-light [class*="bg-[#070"],
+body.py-theme-light [class*="bg-[#0b0"],
+body.py-theme-light [class*="bg-[#0c0"],
+body.py-theme-light [class*="bg-[#0F"],
+body.py-theme-light [class*="bg-[#151"],
+body.py-theme-light [class*="bg-[#1C"],
+body.py-theme-light [class*="bg-[#1D"] {
+  background-color: #f8fafb !important;
+  color: #111722;
+}
+
+body.py-theme-light .py-command-card,
+body.py-theme-light .py-command-hero,
+body.py-theme-light .py-hud-panel,
+body.py-theme-light .py-glass,
+body.py-theme-light [class*="border-white/"] {
+  border-color: rgba(25, 34, 46, .12) !important;
+}
+
+body.py-theme-light .py-command-card,
+body.py-theme-light .py-hud-panel,
+body.py-theme-light .py-glass {
+  background: rgba(255,255,255,.88) !important;
+  box-shadow: 0 18px 50px rgba(31,42,55,.08), inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+body.py-theme-light .py-command-hero {
+  background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(244,246,248,.9)) !important;
+  border-color: rgba(255,54,95,.18) !important;
+  box-shadow: 0 24px 70px rgba(31,42,55,.07);
+}
+
+body.py-theme-light [class*="text-white"],
+body.py-theme-light [class*="text-[#f5"],
+body.py-theme-light [class*="text-[#e9"],
+body.py-theme-light [class*="text-[#d"] {
+  color: #18202b !important;
+}
+body.py-theme-light [class*="text-[#a"],
+body.py-theme-light [class*="text-[#9"],
+body.py-theme-light [class*="text-[#8"],
+body.py-theme-light [class*="text-[#7"],
+body.py-theme-light [class*="text-[#6"],
+body.py-theme-light [class*="text-[#5"] {
+  color: #647181 !important;
+}
+
+body.py-theme-light input,
+body.py-theme-light textarea,
+body.py-theme-light select {
+  color: #111722 !important;
+  background-color: rgba(255,255,255,.88) !important;
+  border-color: rgba(25,34,46,.16) !important;
+}
+body.py-theme-light input::placeholder,
+body.py-theme-light textarea::placeholder { color: #8b96a4 !important; }
+
+body.py-theme-light .py-grid-signal,
+body.py-theme-light .py-hud-grid { opacity: .32 !important; }
+body.py-theme-light .py-grid-noise { opacity: .28; }
+body.py-theme-light .py-topology { opacity: .55; }
+body.py-theme-light .py-scanline::before { background: linear-gradient(to bottom, transparent, rgba(255,54,95,.045), transparent); }
+
+/* Keep the signal-red identity in light mode, but make it precise rather than oppressive. */
+body.py-theme-light [class*="bg-[#ff4757]"],
+body.py-theme-light [class*="bg-[#FF4757]"] {
+  color: #fff !important;
+}
+body.py-theme-light [class*="bg-red-"],
+body.py-theme-light [class*="bg-amber-"],
+body.py-theme-light [class*="bg-green-"] { background-color: color-mix(in srgb, currentColor 7%, white) !important; }
+
+/* Global quick switch: available on landing, login and every product route. */
+.py-theme-toggle {
+  border-color: rgba(255,255,255,.12);
+  background: rgba(10,12,17,.78);
+  color: #d9e0e8;
+  border-radius: 2px;
+}
+.py-theme-toggle:hover { border-color: rgba(255,54,95,.45); color: #fff; transform: translateY(-1px); }
+body.py-theme-light .py-theme-toggle {
+  background: rgba(255,255,255,.86);
+  border-color: rgba(25,34,46,.14);
+  color: #26313f;
+  box-shadow: 0 10px 30px rgba(31,42,55,.10);
+}
+
+/* Settings appearance module */
+.py-theme-settings-panel { position: relative; z-index: 1; padding-top: 1.5rem; }
+.py-theme-settings-inner {
+  border: 1px solid rgba(255,255,255,.09);
+  background: linear-gradient(135deg, rgba(255,54,95,.06), rgba(12,15,21,.88) 45%, rgba(8,10,14,.94));
+  padding: 1.25rem;
+  box-shadow: 0 24px 70px rgba(0,0,0,.2);
+}
+.py-theme-settings-inner > div:first-child > span { border-color: rgba(255,54,95,.25); color: #ff7180; background: rgba(255,54,95,.08); }
+.py-theme-settings-inner h2 { color: #f4f6f8; }
+.py-theme-settings-inner p { color: #8995a4; }
+.py-theme-choice button {
+  display: flex; align-items: center; gap: .8rem; width: 100%; text-align: left;
+  border: 1px solid rgba(255,255,255,.09); background: rgba(255,255,255,.025);
+  padding: .8rem; color: #cfd6df;
+}
+.py-theme-choice button:hover { border-color: rgba(255,54,95,.28); background: rgba(255,54,95,.035); }
+.py-theme-choice button.is-active { border-color: rgba(255,54,95,.55); box-shadow: inset 3px 0 0 #ff365f; }
+.py-theme-choice strong { display:block; font-size:.78rem; }
+.py-theme-choice small { display:block; margin-top:.15rem; color:#748090; font-size:.68rem; }
+.py-theme-preview { display:flex; width:2.5rem; height:2.5rem; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,.12); }
+.py-theme-preview-dark { background: #10141b; color:#ff7180; }
+.py-theme-preview-light { background: #f6f7f8; color:#e03b4f; }
+body.py-theme-light .py-theme-settings-inner {
+  background: linear-gradient(135deg, rgba(255,54,95,.055), rgba(255,255,255,.94) 48%, rgba(242,245,247,.98));
+  border-color: rgba(25,34,46,.12); box-shadow: 0 20px 60px rgba(31,42,55,.07);
+}
+body.py-theme-light .py-theme-settings-inner h2 { color:#17202c; }
+body.py-theme-light .py-theme-settings-inner p { color:#687585; }
+body.py-theme-light .py-theme-choice button { background:#fff; border-color:rgba(25,34,46,.12); color:#26313f; }
+body.py-theme-light .py-theme-choice button:hover { background:#fff8f9; border-color:rgba(224,59,79,.3); }
+
+@media (prefers-reduced-motion: reduce) {
+  .py-theme-toggle, .py-theme-choice button { transition: none !important; }
+}
