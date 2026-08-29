@@ -1,158 +1,29 @@
-/* Hello World */
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
-  --py-bg: #0F1219;
-  --py-surface: #15191F;
-  --py-elevated: #1D232D;
-  --py-subtle: #232D39;
-  --py-border: #2D3748;
-  --py-border-light: #3D4860;
-  --py-text: #F5F7FB;
-  --py-text-secondary: #A8B4C4;
-  --py-text-tertiary: #7A8595;
-  --py-text-muted: #5A6470;
-  --py-teal: #2FD9C7;
-  --py-teal-dark: #1FA89D;
-  --py-success: #06D369;
-  --py-warning: #F59E0B;
-  --py-danger: #FF4757;
-  --py-info: #5B9EFF;
-  --py-insight: #A78BFA;
-  --py-signal-red: #FF365F;
-  --py-signal-red-soft: #FF718B;
-}
+:root{--bg:#0a0d12;--bg-raised:#10151d;--panel:#141a23;--panel-2:#1a222d;--line:rgba(255,255,255,.09);--line-strong:rgba(255,255,255,.16);--ink:#f4f7fa;--muted:#98a4b5;--faint:#647083;--accent:#5eead4;--accent-ink:#042a2a;--signal:#ff526f;--signal-soft:#ff8ba0;--warning:#f6b84b;--success:#5cdb95;--shadow:0 28px 80px rgba(0,0,0,.24);--mono:'DM Mono',ui-monospace,monospace;--sans:'Manrope',Inter,ui-sans-serif,system-ui,sans-serif;color-scheme:dark}
+[data-theme='light']{--bg:#f5f6f2;--bg-raised:#ffffff;--panel:#ffffff;--panel-2:#edf0ed;--line:rgba(18,25,32,.11);--line-strong:rgba(18,25,32,.2);--ink:#131a22;--muted:#586575;--faint:#788493;--accent:#0d9d90;--accent-ink:#fff;--signal:#df3f5c;--signal-soft:#f06a80;--warning:#a96d00;--success:#138c5c;--shadow:0 24px 70px rgba(24,32,40,.09);color-scheme:light}
+*{box-sizing:border-box}html{background:var(--bg);scroll-behavior:smooth}body{margin:0;min-width:320px;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}button,input,textarea,select{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}::selection{background:color-mix(in srgb,var(--accent) 28%,transparent);color:var(--ink)}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
-html { scroll-behavior: smooth; background: var(--py-bg); }
-body {
-  margin: 0;
-  min-width: 320px;
-  background: var(--py-bg);
-  color: var(--py-text);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-}
-* { box-sizing: border-box; }
-button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
-button, a { transition-property: color, background-color, border-color, box-shadow, transform, opacity; transition-duration: 200ms; transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--py-teal); outline-offset: 3px; }
-::selection { background: rgba(47, 217, 199, 0.25); color: var(--py-text); }
+/* shared design primitives */
+.eyebrow{font:500 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}.display{font-weight:800;letter-spacing:-.055em;line-height:.98}.page{max-width:1360px;margin:0 auto;padding:36px 42px 96px}.panel{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}.panel:hover{border-color:var(--line-strong)}.button-primary{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;padding:12px 17px;border-radius:12px;transition:transform .22s ease,box-shadow .22s ease}.button-primary:hover{transform:translateY(-2px);box-shadow:0 12px 30px color-mix(in srgb,var(--accent) 24%,transparent)}.button-secondary{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:11px 16px;border:1px solid var(--line-strong);background:transparent;color:var(--ink);border-radius:12px;font-weight:700}.button-secondary:hover{background:var(--panel-2)}.icon-button{border:1px solid var(--line);background:var(--panel);color:var(--ink);width:38px;height:38px;border-radius:10px;display:grid;place-items:center}.status-orb{width:8px;height:8px;border-radius:99px;background:var(--success);box-shadow:0 0 0 5px color-mix(in srgb,var(--success) 12%,transparent);flex:none}
 
-.py-grid-noise { background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 40px 40px; mask-image: linear-gradient(to bottom, black 0%, transparent 85%); }
-.py-grid-signal { background-image: linear-gradient(rgba(255,71,87,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,71,87,.06) 1px, transparent 1px); background-size: 56px 56px; mask-image: radial-gradient(circle at center, black 0%, transparent 72%); }
-.py-hud-grid { background-image: linear-gradient(rgba(255,54,95,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(255,54,95,.045) 1px, transparent 1px); background-size: 72px 72px; mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,.75) 48%, transparent 100%); }
-.py-glass { background: rgba(21,25,31,.76); border: 1px solid rgba(61,72,96,.65); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
-.py-hud-panel { background: linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.012)); border: 1px solid rgba(255,255,255,.075); box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 24px 70px rgba(0,0,0,.22); }
-.py-sheen { position: relative; overflow: hidden; }
-.py-sheen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,.04) 45%, transparent 62%); transform: translateX(-120%); transition: transform 700ms cubic-bezier(.16,1,.3,1); }
-.py-sheen:hover::after { transform: translateX(120%); }
-.py-signal-frame { position: relative; isolation: isolate; }
-.py-signal-frame::before { content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; padding: 1px; background: linear-gradient(115deg, rgba(47,217,199,.42), transparent 28%, transparent 72%, rgba(91,158,255,.28)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: .65; }
-.py-signal-frame::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background: linear-gradient(105deg, transparent 30%, rgba(47,217,199,.055) 48%, transparent 64%); transform: translateX(-100%); animation: pySignalSweep 8s cubic-bezier(.16,1,.3,1) infinite; }
-.py-topology { background-image: radial-gradient(circle at 15% 20%, rgba(47,217,199,.13) 0 1px, transparent 1.5px), radial-gradient(circle at 70% 30%, rgba(91,158,255,.12) 0 1px, transparent 1.5px), radial-gradient(circle at 35% 75%, rgba(167,139,250,.10) 0 1px, transparent 1.5px); background-size: 140px 120px, 190px 160px, 170px 150px; }
-.py-float-subtle { animation: pyFloatSubtle 7s ease-in-out infinite; }
-.py-fade-up { animation: pyFadeUp 560ms cubic-bezier(.16,1,.3,1) both; }
-.py-fade-up-delay-1 { animation-delay: 80ms; }.py-fade-up-delay-2 { animation-delay: 160ms; }.py-fade-up-delay-3 { animation-delay: 240ms; }.py-fade-up-delay-4 { animation-delay: 320ms; }
-.py-pulse-soft { animation: pyPulseSoft 2.4s ease-in-out infinite; }.py-pulse-live { animation: pyPulseLive 1.8s ease-in-out infinite; }
-.py-scanline { position: relative; overflow: hidden; }.py-scanline::before { content: ""; position: absolute; inset: -30% 0 auto; height: 35%; pointer-events: none; background: linear-gradient(to bottom, transparent, rgba(47,217,199,.06), transparent); animation: pyScanline 7s linear infinite; }
-.py-status-dot { position: relative; }.py-status-dot::after { content: ""; position: absolute; inset: -5px; border-radius: 999px; border: 1px solid currentColor; opacity: .3; animation: pyStatusRing 2.4s ease-out infinite; }
+/* product shell */
+.app-shell{min-height:100vh;background:radial-gradient(circle at 82% 0%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 26%),var(--bg)}.shell-sidebar{position:fixed;z-index:30;inset:16px auto 16px 16px;width:252px;padding:14px;background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);border-radius:20px;backdrop-filter:blur(22px);display:flex;flex-direction:column;box-shadow:var(--shadow)}.brand-row{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 18px}.brand{font-weight:800;letter-spacing:-.04em;display:flex;align-items:center;gap:10px}.brand>span:last-child span{color:var(--accent)}.brand-mark{width:30px;height:30px;border-radius:9px;background:var(--ink);color:var(--bg);display:grid;place-items:center}.new-campaign-rail{border:0;background:transparent;padding:0;margin-bottom:12px;text-align:left}.new-campaign-rail a{display:flex;gap:9px;align-items:center;background:var(--accent);color:var(--accent-ink);border-radius:12px;padding:11px 12px;font-weight:800}.shell-sidebar nav{display:grid;gap:3px}.shell-nav-item{display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:10px;color:var(--muted);font-weight:700}.shell-nav-item:hover{background:var(--panel-2);color:var(--ink)}.shell-nav-item.active{background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--ink);box-shadow:inset 2px 0 0 var(--accent)}.shell-spacer{flex:1}.agent-status{display:flex;gap:10px;align-items:center;padding:14px 10px;border-top:1px solid var(--line);margin-top:12px}.agent-status b{display:block;font-size:12px}.agent-status small{display:block;color:var(--faint);font-size:11px}.theme-switch{width:100%;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:10px;padding:9px 10px;display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700}.theme-switch:hover{background:var(--panel-2);color:var(--ink)}.theme-arrow{margin-left:auto;transform:rotate(180deg)}.shell-content{padding-left:284px;min-height:100vh}.shell-menu,.mobile-close,.shell-scrim{display:none}.shell-command-hint{position:fixed;right:22px;bottom:20px;z-index:20;display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--panel) 90%,transparent);backdrop-filter:blur(16px);font-size:12px;color:var(--muted)}.shell-command-hint kbd{font:500 10px var(--mono);border:1px solid var(--line);border-radius:5px;padding:2px 5px;color:var(--faint)}
 
-/* Cinematic marketing primitives inspired by the supplied reference: structured HUD framing, not a generic hacker dashboard. */
-.py-reveal { animation: pyReveal 760ms cubic-bezier(.16,1,.3,1) both; }.py-reveal-delay { animation-delay: 130ms; }
-.py-hud-frame { position: relative; box-shadow: 0 30px 80px rgba(0,0,0,.35); }.py-hud-frame::before, .py-hud-frame::after { content: ""; position: absolute; width: 24px; height: 24px; pointer-events: none; }.py-hud-frame::before { left: -1px; top: -1px; border-left: 1px solid rgba(255,54,95,.8); border-top: 1px solid rgba(255,54,95,.8); }.py-hud-frame::after { bottom: -1px; right: -1px; border-bottom: 1px solid rgba(255,54,95,.8); border-right: 1px solid rgba(255,54,95,.8); }
-.py-red-orbit { animation: pyRedOrbit 18s linear infinite; }.py-red-orbit-reverse { animation: pyRedOrbit 26s linear infinite reverse; }.py-red-scan { animation: pyRedScan 7s linear infinite; transform-origin: center; }.py-float-red { animation: pyFloatRed 6s ease-in-out infinite; }.py-red-halo { animation: pyHalo 5.5s ease-in-out infinite; }
+/* landing */
+.landing{overflow:hidden;background:var(--bg)}.landing-nav{max-width:1240px;margin:auto;padding:22px 28px;display:flex;align-items:center;justify-content:space-between}.landing-links{display:flex;gap:28px;color:var(--muted);font-weight:700;font-size:13px}.landing-hero{position:relative;max-width:1240px;margin:0 auto;padding:92px 28px 120px;min-height:760px;display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:54px}.landing-hero:before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(circle at 62% 48%,black,transparent 67%);opacity:.28}.hero-copy{position:relative;z-index:1}.hero-copy h1{font-size:clamp(52px,7vw,92px);margin:18px 0 22px;max-width:780px}.hero-copy p{font-size:18px;line-height:1.7;color:var(--muted);max-width:610px}.hero-actions{display:flex;gap:12px;margin-top:30px}.trust-line{display:flex;gap:22px;margin-top:42px;color:var(--faint);font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase}.agent-orbit{position:relative;min-height:500px;display:grid;place-items:center;perspective:1200px}.orbit-core{position:relative;width:min(440px,88vw);aspect-ratio:1;border-radius:36px;background:linear-gradient(145deg,color-mix(in srgb,var(--panel) 92%,transparent),var(--panel-2));border:1px solid var(--line-strong);box-shadow:var(--shadow);transform:rotateX(8deg) rotateY(-8deg);overflow:hidden}.orbit-core:before{content:'';position:absolute;inset:9%;border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:50%;animation:spin 20s linear infinite}.orbit-core:after{content:'';position:absolute;inset:22%;border:1px dashed color-mix(in srgb,var(--signal) 35%,transparent);border-radius:50%;animation:spin 13s linear infinite reverse}.agent-node{position:absolute;background:var(--bg-raised);border:1px solid var(--line-strong);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);font:500 11px var(--mono);letter-spacing:.04em}.agent-node b{display:block;color:var(--ink);margin-bottom:4px}.agent-node small{color:var(--accent)}.node-a{left:8%;top:15%;animation:float 5s ease-in-out infinite}.node-b{right:6%;top:35%;animation:float 6s ease-in-out -2s infinite}.node-c{left:18%;bottom:11%;animation:float 5.5s ease-in-out -3s infinite}.agent-center{position:absolute;inset:0;display:grid;place-items:center}.agent-center>div{width:136px;height:136px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:1px solid color-mix(in srgb,var(--accent) 42%,transparent);box-shadow:0 0 80px color-mix(in srgb,var(--accent) 18%,transparent),inset 0 0 40px color-mix(in srgb,var(--accent) 7%,transparent);font-size:34px;font-weight:800}.landing-section{max-width:1240px;margin:0 auto;padding:90px 28px}.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px}.feature-card{padding:26px;border-radius:18px;background:var(--panel);border:1px solid var(--line);min-height:250px;transition:transform .25s ease,border-color .25s ease}.feature-card:hover{transform:translateY(-5px);border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}.feature-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 11%,transparent);color:var(--accent)}.feature-card h3{margin:38px 0 8px;font-size:19px}.feature-card p{margin:0;color:var(--muted);line-height:1.7}.landing-footer{border-top:1px solid var(--line);padding:32px 28px;color:var(--faint);font-size:12px;max-width:1240px;margin:auto}
 
-/* ------------------------------------------------------------------
-   Signal-surface treatment: Live Campaign Monitor + Integrations
-   The selectors intentionally key off stable ARIA labels so implemented
-   workflows keep their structure and behaviour while gaining the new shell.
-   ------------------------------------------------------------------ */
-body:has([aria-label="Live engagements"]) { background: #09070a; }
-body:has([aria-label="Live engagements"]) main {
-  position: relative;
-  isolation: isolate;
-  background: radial-gradient(ellipse at 50% 0%, rgba(255,54,95,.10), transparent 42%), linear-gradient(180deg,#10060b 0%,#090a0e 45%,#08090c 100%);
-}
-body:has([aria-label="Live engagements"]) main::before {
-  content:""; position:fixed; inset:48px 0 0; z-index:-1; pointer-events:none; opacity:.8;
-  background-image: linear-gradient(rgba(255,54,95,.045) 1px,transparent 1px), linear-gradient(90deg,rgba(255,54,95,.035) 1px,transparent 1px);
-  background-size:72px 72px; mask-image:linear-gradient(to bottom,black,transparent 82%);
-}
-body:has([aria-label="Live engagements"]) header {
-  background: linear-gradient(90deg,rgba(16,6,11,.98),rgba(24,7,13,.94),rgba(8,10,14,.98)) !important;
-  border-color: rgba(255,54,95,.22) !important;
-  box-shadow: 0 10px 40px rgba(0,0,0,.34), inset 0 -1px 0 rgba(255,54,95,.08);
-}
-body:has([aria-label="Live engagements"]) header::after { content:"LIVE OPERATIONS // SIGNAL UPLINK ACTIVE"; margin-left:10px; color:rgba(255,113,139,.58); font:600 9px/1 ui-monospace,SFMono-Regular,monospace; letter-spacing:.22em; white-space:nowrap; }
-body:has([aria-label="Live engagements"]) [aria-label="Live engagements"] {
-  border-color: rgba(255,54,95,.26) !important;
-  border-radius: 2px !important;
-  background: linear-gradient(135deg,rgba(24,10,15,.96),rgba(12,15,21,.98)) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 30px 80px rgba(0,0,0,.28), 0 0 0 1px rgba(255,54,95,.035);
-}
-body:has([aria-label="Live engagements"]) [aria-label="Live engagements"] > div:first-child { border-color:rgba(255,54,95,.18) !important; background:linear-gradient(90deg,rgba(255,54,95,.055),transparent 65%); }
-body:has([aria-label="Live engagements"]) [role="tablist"] { border:1px solid rgba(255,255,255,.06); background:rgba(0,0,0,.28) !important; border-radius:2px !important; }
-body:has([aria-label="Live engagements"]) [role="tab"][aria-selected="true"] { background:rgba(255,54,95,.13) !important; color:#ff718b !important; box-shadow:inset 0 -1px 0 #ff365f; }
-body:has([aria-label="Live engagements"]) [aria-label="Live engagements"] button[class*="border-b"]:hover { background:linear-gradient(90deg,rgba(255,54,95,.06),transparent) !important; }
-body:has([aria-label="Live analytics"]) > div { border-color:rgba(255,54,95,.18) !important; border-radius:2px !important; background:linear-gradient(145deg,rgba(24,9,14,.92),rgba(12,15,20,.96)) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 18px 45px rgba(0,0,0,.2); position:relative; overflow:hidden; }
-body:has([aria-label="Live analytics"]) > div::before { content:""; position:absolute; left:0; top:0; width:42px; height:1px; background:#ff365f; box-shadow:0 0 18px rgba(255,54,95,.8); }
-body:has([aria-label="Live engagements"]) [aria-label="Live analytics"] { position:relative; }
-body:has([aria-label="Live engagements"]) [aria-label="Live analytics"]::before { content:"SIGNAL ANALYSIS"; display:block; margin:0 0 10px 2px; color:rgba(255,113,139,.55); font:600 9px/1 ui-monospace,SFMono-Regular,monospace; letter-spacing:.22em; }
-body:has([aria-label="Live engagements"]) .font-mono { letter-spacing:.01em; }
-body:has([aria-label="Live engagements"]) .bg-blue-600\/20 { background:rgba(255,54,95,.10) !important; border-color:rgba(255,54,95,.28) !important; }
-body:has([aria-label="Live engagements"]) .bg-\[\#1C2333\] { background:rgba(8,12,17,.72) !important; border-color:rgba(255,255,255,.08) !important; }
+/* dashboard and campaign studio */
+.agent-home{min-height:100vh;padding:36px 42px 100px;max-width:1440px;margin:auto}.topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}.topline h1{margin:8px 0 0;font-size:34px}.topline-actions{display:flex;gap:9px}.agent-stage{position:relative;padding:34px;border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--panel) 96%,var(--accent) 4%),var(--panel));border:1px solid var(--line-strong);overflow:hidden}.agent-stage:before{content:'';position:absolute;width:420px;height:420px;border-radius:50%;right:-150px;top:-220px;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 15%,transparent),transparent 68%)}.agent-stage h2{position:relative;font-size:clamp(30px,4vw,48px);margin:10px 0;max-width:680px}.agent-stage p{position:relative;color:var(--muted);max-width:650px}.prompt-box{position:relative;margin-top:28px;border:1px solid var(--line-strong);background:var(--bg-raised);border-radius:16px;padding:8px;display:flex;gap:8px;align-items:center;box-shadow:0 18px 50px rgba(0,0,0,.12)}.prompt-box input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);padding:13px;font-size:15px}.prompt-box button{border:0;background:var(--ink);color:var(--bg);width:46px;height:44px;border-radius:11px;display:grid;place-items:center}.prompt-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.prompt-chips button{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:7px 11px;font-size:12px}.prompt-chips button:hover{color:var(--ink);border-color:var(--line-strong)}.workspace-grid{display:grid;grid-template-columns:1.45fr .85fr;gap:18px;margin-top:18px}.campaign-list-card,.capability-card{padding:24px;border-radius:18px}.section-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px}.section-head h3{margin:6px 0 0;font-size:20px}.campaign-row{display:flex;align-items:center;gap:14px;padding:15px 0;border-top:1px solid var(--line)}.campaign-row:first-of-type{border-top:0}.campaign-pulse{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 10%,transparent)}.campaign-row b{display:block}.campaign-row small{color:var(--faint)}.campaign-row .grow{flex:1}.campaign-meta{font:500 10px var(--mono);color:var(--muted);text-align:right}.capability-list{display:grid;gap:10px}.capability{padding:13px;border:1px solid var(--line);border-radius:13px;display:flex;align-items:center;gap:11px}.capability i{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--panel-2);color:var(--accent)}.capability b{font-size:13px;display:block}.capability small{font-size:11px;color:var(--faint)}
 
-body:has([aria-label="Twilio integration"]) { background:radial-gradient(ellipse at 50% 0%,rgba(255,54,95,.09),transparent 32%),#090a0e; }
-body:has([aria-label="Twilio integration"]) .max-w-7xl {
-  max-width: 92rem !important; padding-top:3rem !important; position:relative;
-}
-body:has([aria-label="Twilio integration"]) .max-w-7xl::before {
-  content:"SYSTEM INTEGRATIONS // DELIVERY + INTELLIGENCE LAYER"; display:block; color:rgba(255,113,139,.62); font:600 10px/1 ui-monospace,SFMono-Regular,monospace; letter-spacing:.22em; margin-bottom:12px;
-}
-body:has([aria-label="Twilio integration"]) .max-w-7xl > header {
-  position:relative; padding:24px 28px 26px; border:1px solid rgba(255,54,95,.25); border-radius:2px;
-  background:linear-gradient(110deg,rgba(255,54,95,.07),rgba(18,13,19,.92) 45%,rgba(8,12,17,.92)); overflow:hidden;
-}
-body:has([aria-label="Twilio integration"]) .max-w-7xl > header::before { content:"01"; position:absolute; right:24px; top:18px; color:rgba(255,54,95,.14); font:800 84px/1 ui-monospace,SFMono-Regular,monospace; }
-body:has([aria-label="Twilio integration"]) .max-w-7xl > header h1 { position:relative; font-size:clamp(2rem,4vw,3.8rem) !important; letter-spacing:-.055em; text-transform:uppercase; }
-body:has([aria-label="Twilio integration"]) .max-w-7xl > header p { position:relative; max-width:58ch; }
-body:has([aria-label="Twilio integration"]) section[aria-label] {
-  position:relative; border-color:rgba(255,255,255,.08) !important; border-radius:2px !important;
-  background:linear-gradient(145deg,rgba(20,13,18,.94),rgba(11,14,19,.96)) !important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 20px 55px rgba(0,0,0,.2); overflow:hidden;
-}
-body:has([aria-label="Twilio integration"]) section[aria-label]::before { content:""; position:absolute; left:0; top:0; width:54px; height:1px; background:#ff365f; box-shadow:0 0 22px rgba(255,54,95,.85); }
-body:has([aria-label="Twilio integration"]) section[aria-label]::after { content:"● LINK STATUS MONITORED"; position:absolute; right:20px; top:18px; color:rgba(47,217,199,.45); font:600 8px/1 ui-monospace,SFMono-Regular,monospace; letter-spacing:.16em; pointer-events:none; }
-body:has([aria-label="Twilio integration"]) input, body:has([aria-label="Twilio integration"]) select { border-radius:2px !important; background:rgba(4,7,11,.54) !important; border-color:rgba(255,255,255,.09) !important; }
-body:has([aria-label="Twilio integration"]) input:focus, body:has([aria-label="Twilio integration"]) select:focus { border-color:rgba(255,54,95,.7) !important; box-shadow:0 0 0 3px rgba(255,54,95,.10) !important; }
-body:has([aria-label="Twilio integration"]) table { background:rgba(0,0,0,.13); }
-body:has([aria-label="Twilio integration"]) th { background:rgba(255,54,95,.055) !important; color:rgba(255,255,255,.5) !important; }
-body:has([aria-label="Twilio integration"]) tr:hover { background:linear-gradient(90deg,rgba(255,54,95,.06),transparent) !important; }
-body:has([aria-label="Twilio integration"]) button[class*="bg-[#2FD9C7]"] { background:linear-gradient(135deg,#ff365f,#e51d48) !important; color:white !important; box-shadow:0 8px 24px rgba(255,54,95,.18); }
-body:has([aria-label="Twilio integration"]) button[class*="bg-[#2FD9C7]"]:hover { box-shadow:0 10px 30px rgba(255,54,95,.3); }
+/* auth, 404 */
+.auth-page,.not-found{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 20% 15%,color-mix(in srgb,var(--accent) 9%,transparent),transparent 30%),var(--bg)}.auth-card{width:min(480px,100%);padding:34px;border-radius:24px;background:var(--panel);border:1px solid var(--line-strong);box-shadow:var(--shadow)}.auth-card h1{font-size:38px;margin:16px 0 8px}.auth-card p{color:var(--muted)}.auth-field{display:grid;gap:7px;margin-top:18px}.auth-field label{font-size:12px;font-weight:800;color:var(--muted)}.auth-field input{background:var(--bg-raised);border:1px solid var(--line);border-radius:11px;padding:13px;color:var(--ink)}.auth-submit{width:100%;margin-top:24px}.not-found-card{text-align:center;max-width:620px}.not-found-code{font:800 clamp(110px,20vw,240px)/.8 var(--sans);letter-spacing:-.1em;color:transparent;-webkit-text-stroke:1px var(--line-strong);margin:0}.not-found h1{font-size:42px;margin:24px 0 10px}.not-found p{color:var(--muted);font-size:17px}
 
-@keyframes pyFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes pyReveal { from { opacity: 0; transform: translateY(24px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
-@keyframes pyPulseSoft { 0%,100% { opacity:.78; } 50% { opacity:1; } }
-@keyframes pyPulseLive { 0%,100% { opacity:.72; box-shadow:0 0 0 0 rgba(47,217,199,.20); } 50% { opacity:1; box-shadow:0 0 0 7px rgba(47,217,199,0); } }
-@keyframes pyScanline { from { transform: translateY(-40%); } to { transform: translateY(380%); } }
-@keyframes pyStatusRing { 0% { transform: scale(.7); opacity:.5; } 75%,100% { transform: scale(1.55); opacity:0; } }
-@keyframes pySignalSweep { 0%, 62% { transform: translateX(-105%); opacity: 0; } 68% { opacity: 1; } 86%, 100% { transform: translateX(105%); opacity: 0; } }
-@keyframes pyFloatSubtle { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-7px,0); } }
-@keyframes pyRedOrbit { from { transform: rotateZ(0deg) rotateX(65deg); } to { transform: rotateZ(360deg) rotateX(65deg); } }
-@keyframes pyRedScan { 0% { transform: rotate(0deg); opacity: .12; } 45% { opacity: .58; } 100% { transform: rotate(360deg); opacity: .12; } }
-@keyframes pyFloatRed { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-10px,0); } }
-@keyframes pyHalo { 0%,100% { opacity:.6; transform: translate(-50%,-50%) scale(.96); } 50% { opacity:1; transform: translate(-50%,-50%) scale(1.05); } }
-
-@media (max-width: 900px) {
-  body:has([aria-label="Live engagements"]) header::after { display:none; }
-  body:has([aria-label="Twilio integration"]) section[aria-label]::after { display:none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes float{50%{transform:translateY(-10px)}}
+@media(max-width:960px){.shell-sidebar{transform:translateX(-115%);transition:transform .25s ease;inset:10px auto 10px 10px}.shell-sidebar.is-open{transform:translateX(0)}.shell-content{padding-left:0}.shell-menu{display:grid;place-items:center;position:fixed;left:16px;top:16px;z-index:25;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}.mobile-close{display:grid}.shell-scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.42);opacity:0;pointer-events:none;z-index:29}.shell-sidebar.is-open~.shell-scrim{opacity:1;pointer-events:auto}.shell-command-hint{display:none}.landing-links{display:none}.landing-hero{grid-template-columns:1fr;padding-top:70px}.agent-orbit{min-height:420px}.workspace-grid{grid-template-columns:1fr}.feature-grid{grid-template-columns:1fr}.agent-home,.page{padding:78px 20px 72px}.topline{align-items:flex-start;gap:16px}.topline-actions{display:none}.agent-stage{padding:24px}.trust-line{gap:12px;flex-wrap:wrap}}
+@media(max-width:560px){.landing-nav{padding:16px 18px}.landing-hero,.landing-section{padding-left:18px;padding-right:18px}.hero-copy h1{font-size:50px}.hero-actions{flex-direction:column;align-items:stretch}.orbit-core{width:100%;border-radius:24px}.agent-node{padding:9px 10px;font-size:9px}.agent-center>div{width:100px;height:100px}.prompt-box{align-items:stretch}.prompt-box input{font-size:13px}.campaign-meta{display:none}.campaign-row{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
