@@ -135,3 +135,43 @@
 :root[data-theme='light'] main.bg-\[\#090b10\] {
   background-color: var(--bg) !important;
 }
+
+/* Agent workspace card styling */
+.py-command-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Settings + Integrations light mode overrides                       */
+/* Maps the remaining hardcoded dark palette patterns used by         */
+/* Settings.tsx and Integrations.tsx to CSS variables.                */
+/* ------------------------------------------------------------------ */
+
+:root[data-theme='light'] .text-slate-100 { color: var(--ink) !important; }
+
+:root[data-theme='light'] .divide-\[\#252D38\] > :not(:first-child) { border-color: var(--line) !important; }
+
+:root[data-theme='light'] .hover\:bg-white\/5:hover { background-color: var(--surface-2) !important; }
+:root[data-theme='light'] .hover\:bg-\[\#232D39\]:hover { background-color: var(--surface-2) !important; }
+:root[data-theme='light'] .hover\:bg-red-500\/10:hover { background-color: color-mix(in srgb, #FF4757 10%, transparent) !important; }
+:root[data-theme='light'] .hover\:bg-\[\#2FD9C7\]\/10:hover { background-color: var(--accent-soft) !important; }
+
+:root[data-theme='light'] .bg-\[\#06D369\]\/10 { background-color: color-mix(in srgb, #06D369 10%, transparent) !important; }
+:root[data-theme='light'] .bg-red-500\/10 { background-color: color-mix(in srgb, #FF4757 10%, transparent) !important; }
+:root[data-theme='light'] .bg-red-500\/15 { background-color: color-mix(in srgb, #FF4757 15%, transparent) !important; }
+:root[data-theme='light'] .bg-amber-400\/10 { background-color: color-mix(in srgb, #F59E0B 10%, transparent) !important; }
+:root[data-theme='light'] .bg-green-400\/10 { background-color: color-mix(in srgb, #06D369 10%, transparent) !important; }
+:root[data-theme='light'] .bg-blue-500\/10 { background-color: color-mix(in srgb, #5B9EFF 10%, transparent) !important; }
+:root[data-theme='light'] .bg-purple-400\/10 { background-color: color-mix(in srgb, #A78BFA 10%, transparent) !important; }
+:root[data-theme='light'] .bg-slate-400\/10 { background-color: color-mix(in srgb, var(--muted) 10%, transparent) !important; }
+
+/* Header text in Settings/Integrations */
+:root[data-theme='light'] h1.text-white,
+:root[data-theme='light'] h2.text-white,
+:root[data-theme='light'] h3.text-white,
+:root[data-theme='light'] h4.text-white { color: var(--ink) !important; }
+
+/* Page wrapper background */
+:root[data-theme='light'] .max-w-7xl.mx-auto { background-color: transparent !important; }
