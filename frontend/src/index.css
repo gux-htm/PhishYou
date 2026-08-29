@@ -4,3 +4,134 @@
 .py-landing{min-height:100vh;background:radial-gradient(circle at 80% 20%,var(--accent-soft),transparent 24%),var(--bg)}.py-landing-nav{max-width:1240px;margin:auto;height:82px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.py-landing-nav .py-brand{padding:0}.py-landing-nav nav{display:flex;align-items:center;gap:24px;font-size:12px;color:var(--muted)}.py-landing-nav nav button{background:none;border:0;color:var(--muted);font:500 9px DM Mono,monospace;letter-spacing:.1em}.py-cta,.py-primary{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:var(--bg)!important;padding:12px 16px;font-size:12px;font-weight:800;border:0}.py-landing-main{max-width:1240px;margin:auto;padding:72px 24px}.py-hero{min-height:560px;display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center}.py-hero h1{font-size:clamp(54px,8vw,108px);line-height:.9;letter-spacing:-.08em;margin:18px 0 28px}.py-hero h1 em{font-style:normal;color:var(--accent)}.py-hero-actions{display:flex;gap:20px;align-items:center;margin-top:32px;font-size:13px}.py-orbital-card{height:440px;position:relative;border:1px solid var(--line);background:radial-gradient(circle,var(--accent-soft),transparent 52%),var(--surface);overflow:hidden}.py-orbit{position:absolute;border:1px solid var(--line);border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%)}.py-orbit-a{width:280px;height:280px}.py-orbit-b{width:420px;height:420px;border-color:color-mix(in srgb,var(--accent) 28%,transparent);animation:pyspin 18s linear infinite}.py-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:112px;height:112px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--bg);box-shadow:0 0 0 12px var(--accent-soft)}.py-core span{font:500 8px DM Mono,monospace}.py-signal{position:absolute;padding:10px 12px;border:1px solid var(--line);background:var(--surface);font:500 9px/1.6 DM Mono,monospace;letter-spacing:.12em}.py-signal-a{top:80px;right:24px}.py-signal-b{bottom:70px;left:18px}.py-feature-strip{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.py-feature-strip article{padding:36px 28px;border-right:1px solid var(--line)}.py-feature-strip article:last-child{border:0}.py-feature-strip svg{color:var(--accent)}.py-feature-strip h3{font-size:18px;margin:14px 0 8px}.py-feature-strip p:last-child{font-size:13px;color:var(--muted);line-height:1.7}.py-process{padding:110px 0 60px}.py-process h2{font-size:clamp(32px,5vw,64px);letter-spacing:-.06em;max-width:700px}.py-process-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);margin-top:48px}.py-process-grid span{padding:24px 20px;border-right:1px solid var(--line);color:var(--accent);font:500 10px DM Mono,monospace}.py-process-grid b{display:block;color:var(--ink);font:800 18px Manrope,sans-serif;margin:18px 0 8px}.py-process-grid small{display:block;color:var(--muted);font:400 12px/1.6 Manrope,sans-serif}.py-landing footer{max-width:1240px;margin:auto;padding:28px 24px;color:var(--muted);font:500 9px DM Mono,monospace;letter-spacing:.12em}.py-landing footer span{color:var(--accent);margin:0 8px}
 .py-command-hero{padding:52px;background:linear-gradient(130deg,var(--surface),color-mix(in srgb,var(--surface) 85%,var(--accent-soft)));border:1px solid var(--line);position:relative}.py-command-hero:before{content:'';position:absolute;top:0;left:0;width:34%;height:2px;background:var(--accent)}.py-command-hero .py-title span{color:var(--accent)}.py-command-meta{display:flex;gap:18px;align-items:center;margin:28px 0 14px;color:var(--muted);font:500 9px DM Mono,monospace;letter-spacing:.12em}.py-command-meta span:first-child{color:var(--teal);display:flex;gap:7px}.py-dashboard-section{margin-top:54px}.py-section-heading{display:flex;align-items:end;justify-content:space-between;margin-bottom:18px}.py-section-heading h2{margin:8px 0 0;font-size:26px;letter-spacing:-.04em}.py-small{padding:10px 13px}.py-campaign-list{border-top:1px solid var(--line)}.py-campaign-row{display:grid;grid-template-columns:58px 1fr auto 24px;gap:18px;align-items:center;padding:22px 10px;border-bottom:1px solid var(--line);transition:.2s}.py-campaign-row:hover{background:var(--surface);padding-left:18px}.py-campaign-number{font:500 11px DM Mono,monospace;color:var(--accent)}.py-campaign-row h3{margin:0 0 5px;font-size:14px}.py-campaign-row p{margin:0;font-size:12px;color:var(--muted)}.py-state{font:500 9px DM Mono,monospace;letter-spacing:.12em;padding:7px 9px;border:1px solid var(--line);color:var(--muted)}.py-state.planning{color:var(--teal)}.py-state.review{color:#d7a84b}.py-state.complete{color:var(--muted)}.py-capability-grid{grid-template-columns:repeat(2,1fr)}.py-card span{display:block;margin-top:20px;font-size:11px;color:var(--accent);font-weight:700}
 @keyframes pyspin{to{transform:translate(-50%,-50%) rotate(360deg)}}.bg-\[\#0F1219\],.bg-gray-950{background-color:var(--bg)!important}.bg-\[\#15191F\],.bg-gray-900{background-color:var(--surface)!important}.text-white{color:var(--ink)!important}.text-gray-300,.text-gray-400{color:var(--muted)!important}.border-gray-700,.border-gray-800{border-color:var(--line)!important}@media(max-width:900px){.py-sidebar{transform:translateX(-100%);transition:.25s}.py-sidebar.is-open{transform:translateX(0)}.py-main{margin-left:0}.py-menu{display:grid;margin-right:14px}main{padding:24px 16px}.py-topbar{padding:0 16px}.py-brand i{display:none}.py-hero{grid-template-columns:1fr;padding-top:30px}.py-feature-strip,.py-process-grid,.py-capability-grid{grid-template-columns:1fr}.py-feature-strip article,.py-process-grid span{border-bottom:1px solid var(--line);border-right:0}.py-orbital-card{height:360px}.py-landing-nav nav a:not(.py-cta){display:none}.py-landing-nav nav{gap:8px}.py-campaign-row{grid-template-columns:40px 1fr auto}.py-campaign-row svg{display:none}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* PhishYou — Light mode overrides for hardcoded dark palette
+   Maps common hex/opacity Tailwind patterns to CSS variables when
+   data-theme="light" is active on the root. */
+:root[data-theme='light'] .bg-\[\#090a0e\],
+:root[data-theme='light'] .bg-\[\#090b10\],
+:root[data-theme='light'] .bg-\[\#0A0D13\],
+:root[data-theme='light'] .bg-\[\#08110D\],
+:root[data-theme='light'] .bg-\[\#0c0f15\],
+:root[data-theme='light'] .bg-\[\#0c0f15\]\/90 {
+  background-color: var(--bg) !important;
+}
+
+:root[data-theme='light'] .bg-\[\#0d1016\],
+:root[data-theme='light'] .bg-\[\#0d1016\]\/90,
+:root[data-theme='light'] .bg-\[\#0b0d12\],
+:root[data-theme='light'] .bg-\[\#111827\],
+:root[data-theme='light'] .bg-\[\#1D232D\],
+:root[data-theme='light'] .bg-\[\#15191F\],
+:root[data-theme='light'] .bg-\[\#12151b\],
+:root[data-theme='light'] .bg-\[\#191d25\] {
+  background-color: var(--surface) !important;
+}
+
+:root[data-theme='light'] .bg-\[\#232D39\],
+:root[data-theme='light'] .bg-\[\#2D3748\],
+:root[data-theme='light'] .bg-\[\#170508\],
+:root[data-theme='light'] .bg-\[\#0F1219\] {
+  background-color: var(--surface-2) !important;
+}
+
+:root[data-theme='light'] .text-\[\#f5f1f2\],
+:root[data-theme='light'] .text-\[\#f5f7fb\],
+:root[data-theme='light'] .text-\[\#f7f4f5\] {
+  color: var(--ink) !important;
+}
+
+:root[data-theme='light'] .text-\[\#7a8595\],
+:root[data-theme='light'] .text-\[\#8c949f\],
+:root[data-theme='light'] .text-\[\#7A8595\],
+:root[data-theme='light'] .text-\[\#7e8792\],
+:root[data-theme='light'] .text-\[\#9c8b91\],
+:root[data-theme='light'] .text-slate-400,
+:root[data-theme='light'] .text-slate-500 {
+  color: var(--muted) !important;
+}
+
+:root[data-theme='light'] .text-\[\#a8b4c4\],
+:root[data-theme='light'] .text-\[\#A8B4C4\],
+:root[data-theme='light'] .text-slate-200,
+:root[data-theme='light'] .text-slate-300,
+:root[data-theme='light'] .text-\[\#d8dee8\] {
+  color: var(--soft) !important;
+}
+
+:root[data-theme='light'] .text-\[\#58606c\],
+:root[data-theme='light'] .text-\[\#59616d\],
+:root[data-theme='light'] .text-\[\#5a6470\],
+:root[data-theme='light'] .text-\[\#5d6570\],
+:root[data-theme='light'] .text-\[\#5A6470\],
+:root[data-theme='light'] .text-\[\#5f444c\],
+:root[data-theme='light'] .text-\[\#73545d\],
+:root[data-theme='light'] .text-\[\#7e626b\],
+:root[data-theme='light'] .text-slate-600 {
+  color: var(--muted) !important;
+}
+
+:root[data-theme='light'] .border-\[\#2D3748\],
+:root[data-theme='light'] .border-\[\#3D4860\],
+:root[data-theme='light'] .border-\[\#252D38\] {
+  border-color: var(--line) !important;
+}
+
+:root[data-theme='light'] .border-white\/\[\.06\],
+:root[data-theme='light'] .border-white\/\[\.07\],
+:root[data-theme='light'] .border-white\/\[\.08\],
+:root[data-theme='light'] .border-white\/\[\.09\],
+:root[data-theme='light'] .border-white\/\[\.1\],
+:root[data-theme='light'] .border-white\/\[\.11\],
+:root[data-theme='light'] .border-white\/10 {
+  border-color: var(--line) !important;
+}
+
+:root[data-theme='light'] .bg-black\/20,
+:root[data-theme='light'] .bg-black\/15,
+:root[data-theme='light'] .bg-black\/40,
+:root[data-theme='light'] .bg-black\/\[\.2\] {
+  background-color: var(--surface-2) !important;
+}
+
+:root[data-theme='light'] .bg-white\/\[\.025\],
+:root[data-theme='light'] .bg-white\/\[\.035\],
+:root[data-theme='light'] .bg-white\/\[\.04\],
+:root[data-theme='light'] .bg-white\/\[\.05\],
+:root[data-theme='light'] .bg-white\/5,
+:root[data-theme='light'] .bg-white\/10 {
+  background-color: var(--surface-2) !important;
+}
+
+:root[data-theme='light'] .divide-white\/\[\.06\] > :not(:first-child) {
+  border-color: var(--line) !important;
+}
+
+:root[data-theme='light'] .divide-\[\#252D38\] > :not(:first-child) {
+  border-color: var(--line) !important;
+}
+
+:root[data-theme='light'] input,
+:root[data-theme='light'] select,
+:root[data-theme='light'] textarea {
+  background-color: var(--surface-2) !important;
+  color: var(--ink) !important;
+  border-color: var(--line) !important;
+}
+
+:root[data-theme='light'] input::placeholder,
+:root[data-theme='light'] textarea::placeholder {
+  color: var(--muted) !important;
+}
+
+/* Login page light mode */
+:root[data-theme='light'] .min-h-screen.bg-\[\#090a0e\] {
+  background-color: var(--bg) !important;
+}
+:root[data-theme='light'] aside.bg-\[\#090307\] {
+  background-color: var(--surface) !important;
+}
+
+/* 404 page, CampaignWorkspace, Learning light mode */
+:root[data-theme='light'] main.bg-\[\#090b10\] {
+  background-color: var(--bg) !important;
+}

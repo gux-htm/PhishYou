@@ -1,63 +1,128 @@
-/**
- * PhishYou — Not Found Page (404 catch-all)
- * Spec: FRONTEND_SPEC_ENHANCED.md — Application Routes (catch-all) +
- *       Global Components → Empty States pattern.
- */
-import { ArrowLeft, Compass, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Compass } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTheme } from '../design/ThemeProvider';
 
 export default function NotFound() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0A0D13] px-6 py-16 text-center text-white">
-      <div className="pointer-events-none absolute inset-0 py-grid-noise opacity-50" />
-      <div className="pointer-events-none absolute inset-0 py-topology opacity-70" />
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#2FD9C7]/[0.07] blur-[140px]" />
-
-      <div className="relative w-full max-w-xl py-fade-up">
-        <Link to="/" className="mx-auto inline-flex items-center gap-3 text-left" aria-label="PhishYou home">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#2FD9C7]/20 bg-[#2FD9C7]/[0.07] text-[#2FD9C7] shadow-[0_0_28px_rgba(47,217,199,.08)]">
-            <ShieldCheck className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <span>
-            <span className="block text-sm font-black tracking-[.18em]">PHISHYOU</span>
-            <span className="mt-1 block text-[10px] font-semibold uppercase tracking-[.16em] text-white/30">Human risk intelligence</span>
-          </span>
+    <div className="py-landing" style={{ minHeight: '100vh' }}>
+      <header className="py-landing-nav">
+        <Link to="/" className="py-brand">
+          <span className="py-brand-mark">P</span>
+          <span>PhishYou</span>
         </Link>
+        <nav>
+          <Link to="/login">Sign in</Link>
+          <button onClick={toggleTheme}>{theme === 'dark' ? 'LIGHT' : 'DARK'}</button>
+        </nav>
+      </header>
 
-        <section className="py-signal-frame mt-10 overflow-hidden rounded-[2rem] border border-white/[0.08] bg-[#111720]/80 p-8 shadow-[0_30px_90px_rgba(0,0,0,.38)] backdrop-blur-xl sm:p-12">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[#5B9EFF]/20 bg-[#5B9EFF]/[0.06] text-[#5B9EFF]">
-            <Compass className="h-6 w-6" aria-hidden="true" />
+      <main
+        className="py-landing-main"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'calc(100vh - 82px - 60px)',
+        }}
+      >
+        <div className="w-full max-w-xl text-center">
+          <div
+            className="py-surface"
+            style={{ padding: 'clamp(32px, 5vw, 56px)', borderRadius: '24px' }}
+          >
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                margin: '0 auto 24px',
+                display: 'grid',
+                placeItems: 'center',
+                border: '1px solid var(--line)',
+                background: 'var(--accent-soft)',
+                borderRadius: 16,
+                color: 'var(--accent)',
+              }}
+            >
+              <Compass size={26} />
+            </div>
+
+            <p className="py-eyebrow" style={{ marginBottom: 16 }}>
+              Route unavailable — 404
+            </p>
+
+            <h1 className="py-title" style={{ fontSize: 'clamp(36px, 6vw, 64px)' }}>
+              Lost signal.
+            </h1>
+
+            <p className="py-lede" style={{ margin: '16px auto 0', maxWidth: 440 }}>
+              <code
+                style={{
+                  fontFamily: 'DM Mono, monospace',
+                  color: 'var(--soft)',
+                  background: 'var(--bg-2)',
+                  padding: '2px 6px',
+                  fontSize: 13,
+                }}
+              >
+                {location.pathname}
+              </code>{' '}
+              isn&apos;t an available PhishYou route. It may have moved, expired, or
+              require a valid workspace path.
+            </p>
+
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: 12,
+                marginTop: 32,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  border: '1px solid var(--line)',
+                  background: 'transparent',
+                  color: 'var(--soft)',
+                  padding: '12px 16px',
+                  fontSize: 12,
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                }}
+              >
+                <ArrowLeft size={15} />
+                Go back
+              </button>
+              <Link to="/dashboard" className="py-primary">
+                Open Command Center <ArrowRight size={15} />
+              </Link>
+            </div>
           </div>
-          <p className="mt-8 font-mono text-[11px] font-bold uppercase tracking-[.24em] text-[#2FD9C7]">Route unavailable · 404</p>
-          <h1 className="mt-4 text-5xl font-black tracking-[-.055em] sm:text-6xl">Lost signal.</h1>
-          <p className="mx-auto mt-5 max-w-md text-sm leading-7 text-[#7A8595]">
-            <span className="font-mono text-[#A8B4C4]">{location.pathname}</span> isn&apos;t an available PhishYou route. It may have moved, expired, or require a valid workspace path.
+
+          <p
+            style={{
+              marginTop: 24,
+              fontSize: 10,
+              fontFamily: 'DM Mono, monospace',
+              letterSpacing: '.12em',
+              color: 'var(--muted)',
+            }}
+          >
+            Authorized security simulation platform{' '}
+            <span style={{ color: 'var(--accent)', margin: '0 8px' }}>—</span> Enterprise
+            access only
           </p>
-
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#3D4860] bg-white/[0.025] px-4 py-2.5 text-sm font-semibold text-[#A8B4C4] hover:border-[#2FD9C7]/35 hover:bg-[#2FD9C7]/[0.04] hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              Go back
-            </button>
-            <Link
-              to="/dashboard"
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#2FD9C7] px-4 py-2.5 text-sm font-bold text-[#07110F] shadow-[0_12px_32px_rgba(47,217,199,.13)] hover:-translate-y-0.5 hover:bg-[#5BE7D8]"
-            >
-              <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
-              Open Command Center
-            </Link>
-          </div>
-        </section>
-
-        <p className="mt-6 text-xs text-white/25">Authorized security simulation platform · Enterprise access only</p>
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
   );
 }
