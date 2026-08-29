@@ -32,10 +32,9 @@ export default function CampaignWorkspace() {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden px-4 py-5 sm:px-6 lg:px-8"
+      className="relative overflow-hidden px-4 py-5 sm:px-6 lg:px-8"
       style={mainStyle}
     >
-      <div className="pointer-events-none absolute inset-0 py-grid-signal opacity-45" />
       <div
         className="pointer-events-none absolute right-[-10rem] top-[-14rem] h-[36rem] w-[36rem] rounded-full blur-[130px]"
         style={{ background: 'color-mix(in srgb, var(--accent) 5.5%, transparent)' }}
