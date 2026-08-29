@@ -1,5 +1,6 @@
-// Hello World
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
+import { AppShell } from './components/AppShell';
 import { Landing } from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -16,30 +17,24 @@ import NotFound from './pages/NotFound';
 import CreateCampaign from './pages/CreateCampaign';
 import CampaignWorkspace from './pages/CampaignWorkspace';
 
+const product = (node: React.ReactNode) => <AppShell>{node}</AppShell>;
+
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public entry */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-
-        {/* Existing product surfaces — wired so the completed UI is reachable. */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/campaigns/new" element={<CreateCampaign />} />
-        <Route path="/campaigns/:id" element={<CampaignWorkspace />} />
-        <Route path="/targets" element={<Targets />} />
-        <Route path="/targets/:id" element={<TargetDetail />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/learning" element={<Learning />} />
-        <Route path="/campaigns/:id/live" element={<LiveCampaignMonitor />} />
-        <Route path="/organization" element={<Organization />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/settings/integrations" element={<Integrations />} />
-
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
-  );
+  return <ThemeProvider><BrowserRouter><Routes>
+    <Route path="/" element={<Landing />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/dashboard" element={product(<Dashboard />)} />
+    <Route path="/campaigns/new" element={product(<CreateCampaign />)} />
+    <Route path="/campaigns/:id" element={product(<CampaignWorkspace />)} />
+    <Route path="/campaigns/:id/live" element={product(<LiveCampaignMonitor />)} />
+    <Route path="/targets" element={product(<Targets />)} />
+    <Route path="/targets/:id" element={product(<TargetDetail />)} />
+    <Route path="/reports" element={product(<Reports />)} />
+    <Route path="/learning" element={product(<Learning />)} />
+    <Route path="/organization" element={product(<Organization />)} />
+    <Route path="/users" element={product(<Users />)} />
+    <Route path="/settings" element={product(<Settings />)} />
+    <Route path="/settings/integrations" element={product(<Integrations />)} />
+    <Route path="*" element={<NotFound />} />
+  </Routes></BrowserRouter></ThemeProvider>;
 }
