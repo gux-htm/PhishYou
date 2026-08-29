@@ -1,0 +1,104 @@
+/* PhishYou dual-theme system. The visual language stays technical and cinematic in both modes. */
+:root {
+  --py-theme-bg: #0f1219;
+  --py-theme-surface: #15191f;
+  --py-theme-elevated: #1d232d;
+  --py-theme-text: #f5f7fb;
+  --py-theme-muted: #a8b4c4;
+  --py-theme-border: rgba(255,255,255,.09);
+  --py-theme-shadow: rgba(0,0,0,.28);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --py-bg: #f5f4f1;
+  --py-surface: #ffffff;
+  --py-elevated: #f0efec;
+  --py-subtle: #e8e8e4;
+  --py-border: #d8d7d2;
+  --py-border-light: #c9c8c2;
+  --py-text: #11131a;
+  --py-text-secondary: #535966;
+  --py-text-tertiary: #747987;
+  --py-text-muted: #9498a1;
+  --py-theme-bg: #f5f4f1;
+  --py-theme-surface: #ffffff;
+  --py-theme-elevated: #ecebe7;
+  --py-theme-text: #11131a;
+  --py-theme-muted: #5f6570;
+  --py-theme-border: rgba(17,19,26,.12);
+  --py-theme-shadow: rgba(22,18,20,.12);
+}
+
+:root[data-theme='light'] html,
+:root[data-theme='light'] body,
+:root[data-theme='light'] #root { background: var(--py-bg); color: var(--py-text); }
+
+/* The app predates theme tokens in several implemented screens. These semantic surface mappings keep those screens coherent without changing unfinished files. */
+:root[data-theme='light'] [class*='bg-[#0F1219]'],
+:root[data-theme='light'] [class*='bg-[#0f1219]'],
+:root[data-theme='light'] [class*='bg-[#090a0e]'],
+:root[data-theme='light'] [class*='bg-[#09070a]'],
+:root[data-theme='light'] [class*='bg-[#0B0E14]'] { background-color: #f5f4f1 !important; }
+:root[data-theme='light'] [class*='bg-[#15191F]'],
+:root[data-theme='light'] [class*='bg-[#15191f]'],
+:root[data-theme='light'] [class*='bg-[#1C2333]'],
+:root[data-theme='light'] [class*='bg-[#1c2333]'] { background-color: #fff !important; }
+:root[data-theme='light'] [class*='bg-[#1D232D]'],
+:root[data-theme='light'] [class*='bg-[#1d232d]'],
+:root[data-theme='light'] [class*='bg-[#232D39]'],
+:root[data-theme='light'] [class*='bg-[#232d39]'] { background-color: #ecebe7 !important; }
+:root[data-theme='light'] .bg-slate-900,
+:root[data-theme='light'] .bg-slate-950 { background-color: #f5f4f1 !important; }
+:root[data-theme='light'] .bg-slate-800 { background-color: #fff !important; }
+:root[data-theme='light'] .border-slate-700,
+:root[data-theme='light'] .border-slate-800 { border-color: #d8d7d2 !important; }
+:root[data-theme='light'] .text-white { color: #11131a !important; }
+:root[data-theme='light'] .text-slate-100 { color: #181b23 !important; }
+:root[data-theme='light'] .text-slate-200 { color: #2b3039 !important; }
+:root[data-theme='light'] .text-slate-300 { color: #454b56 !important; }
+:root[data-theme='light'] .text-slate-400 { color: #626975 !important; }
+:root[data-theme='light'] .text-slate-500 { color: #767d88 !important; }
+
+/* Preserve the HUD language in light mode: ink, paper, restrained signal red, and visible technical lines. */
+:root[data-theme='light'] .py-glass { background: rgba(255,255,255,.84); border-color: rgba(17,19,26,.12); }
+:root[data-theme='light'] .py-hud-panel { background: linear-gradient(135deg,rgba(255,255,255,.96),rgba(245,244,241,.92)); border-color: rgba(17,19,26,.10); box-shadow: inset 0 1px 0 #fff, 0 24px 60px rgba(22,18,20,.08); }
+:root[data-theme='light'] .py-grid-noise { background-image: linear-gradient(rgba(17,19,26,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(17,19,26,.045) 1px,transparent 1px); }
+:root[data-theme='light'] .py-grid-signal { background-image: linear-gradient(rgba(255,54,95,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(255,54,95,.07) 1px,transparent 1px); }
+:root[data-theme='light'] .py-hud-grid { background-image: linear-gradient(rgba(255,54,95,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(255,54,95,.055) 1px,transparent 1px); }
+:root[data-theme='light'] .py-hud-frame { box-shadow: 0 30px 80px rgba(22,18,20,.10); }
+:root[data-theme='light'] .py-command-card { border-color: rgba(17,19,26,.10); background: linear-gradient(145deg,rgba(255,255,255,.96),rgba(240,239,235,.96)); box-shadow: inset 0 1px 0 #fff,0 24px 60px rgba(22,18,20,.08); }
+:root[data-theme='light'] .py-command-hero { border-color: rgba(17,19,26,.12); background: linear-gradient(105deg,rgba(255,54,95,.055),transparent 34%),radial-gradient(circle at 78% 45%,rgba(255,71,87,.05),transparent 30%),linear-gradient(145deg,#fff,#f0efeb); box-shadow: inset 0 1px 0 #fff,0 32px 90px rgba(22,18,20,.10); }
+:root[data-theme='light'] .py-radar { background-color: rgba(255,255,255,.55); box-shadow: inset 0 0 45px rgba(255,54,95,.05),0 0 70px rgba(255,54,95,.05); }
+
+.py-theme-toggle {
+  position: fixed; right: 22px; top: 22px; z-index: 80;
+  display: inline-flex; align-items: center; gap: 9px; min-height: 42px;
+  padding: 0 14px; border: 1px solid var(--py-theme-border); border-radius: 2px;
+  color: var(--py-theme-text); background: color-mix(in srgb,var(--py-theme-surface) 88%,transparent);
+  box-shadow: 0 10px 32px var(--py-theme-shadow); backdrop-filter: blur(14px);
+  font: 700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing: .16em;
+}
+.py-theme-toggle:hover { border-color: rgba(255,54,95,.52); transform: translateY(-1px); }
+.py-theme-toggle-label { display: inline-block; }
+
+.py-appearance-panel {
+  position: fixed; z-index: 70; left: 50%; bottom: 24px; transform: translateX(-50%);
+  width: min(900px,calc(100vw - 32px)); display: grid; grid-template-columns: 1.2fr .9fr; gap: 24px;
+  padding: 22px 24px; border: 1px solid var(--py-theme-border); background: color-mix(in srgb,var(--py-theme-surface) 94%,transparent);
+  color: var(--py-theme-text); box-shadow: 0 28px 80px var(--py-theme-shadow); backdrop-filter: blur(20px);
+}
+.py-appearance-panel::before { content:''; position:absolute; left:0; top:0; width:100px; height:1px; background:linear-gradient(90deg,#ff365f,transparent); }
+.py-system-label { display:block; margin-bottom:9px; color:#ff718b; font:700 10px/1 ui-monospace,SFMono-Regular,monospace; letter-spacing:.22em; }
+.py-appearance-copy h2 { margin:0 0 8px; font-size:1.15rem; letter-spacing:-.02em; }
+.py-appearance-copy p { margin:0; max-width:58ch; color:var(--py-theme-muted); font-size:.86rem; line-height:1.55; }
+.py-theme-options { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-content:center; }
+.py-theme-option { display:flex; align-items:center; gap:10px; padding:11px; text-align:left; color:var(--py-theme-text); background:transparent; border:1px solid var(--py-theme-border); }
+.py-theme-option:hover,.py-theme-option.is-active { border-color:rgba(255,54,95,.55); background:rgba(255,54,95,.045); }
+.py-theme-option strong,.py-theme-option small { display:block; }.py-theme-option strong { font-size:.82rem; }.py-theme-option small { margin-top:3px; color:var(--py-theme-muted); font-size:.7rem; }
+.py-theme-preview { display:grid; place-items:center; width:38px; height:38px; border:1px solid var(--py-theme-border); }.py-theme-preview-dark { background:#11131a; color:#f5f7fb; }.py-theme-preview-light { background:#f5f4f1; color:#11131a; }
+
+@media (max-width: 720px) {
+  .py-theme-toggle { right: 12px; top: 12px; width:42px; justify-content:center; padding:0; }.py-theme-toggle-label { display:none; }
+  .py-appearance-panel { grid-template-columns:1fr; bottom:14px; padding:18px; }.py-theme-options { grid-template-columns:1fr; }
+}
