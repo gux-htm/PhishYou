@@ -15,6 +15,7 @@ import Users from './pages/Users';
 import NotFound from './pages/NotFound';
 import CreateCampaign from './pages/CreateCampaign';
 import CampaignWorkspace from './pages/CampaignWorkspace';
+import { SettingsAppearancePanel, ThemeToggle } from './components/layout/ThemeControls';
 
 export default function App() {
   return (
@@ -40,6 +41,8 @@ export default function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <SettingsAppearancePanel />
+      <ThemeToggle />
     </BrowserRouter>
   );
 }
