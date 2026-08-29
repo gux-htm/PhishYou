@@ -1,5 +1,8 @@
 // Hello World
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import './theme.css';
+import { ThemeProvider } from './context/ThemeContext';
+import { SettingsAppearancePanel, ThemeToggle } from './components/ThemeControls';
 import { Landing } from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -15,31 +18,39 @@ import Users from './pages/Users';
 import NotFound from './pages/NotFound';
 import CreateCampaign from './pages/CreateCampaign';
 import CampaignWorkspace from './pages/CampaignWorkspace';
+import AgentTools from './pages/AgentTools';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public entry */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
+    <ThemeProvider>
+      <BrowserRouter>
+        <ThemeToggle />
+        <SettingsAppearancePanel />
+        <Routes>
+          {/* Public entry */}
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* Existing product surfaces — wired so the completed UI is reachable. */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/campaigns/new" element={<CreateCampaign />} />
-        <Route path="/campaigns/:id" element={<CampaignWorkspace />} />
-        <Route path="/targets" element={<Targets />} />
-        <Route path="/targets/:id" element={<TargetDetail />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/learning" element={<Learning />} />
-        <Route path="/campaigns/:id/live" element={<LiveCampaignMonitor />} />
-        <Route path="/organization" element={<Organization />} />
-        <Route path="/users" element={<Users />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/settings/integrations" element={<Integrations />} />
+          {/* Product workspace */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/campaigns/new" element={<CreateCampaign />} />
+          <Route path="/campaigns/:id" element={<CampaignWorkspace />} />
+          <Route path="/campaigns/:id/live" element={<LiveCampaignMonitor />} />
+          <Route path="/tools" element={<AgentTools />} />
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Supporting product surfaces */}
+          <Route path="/targets" element={<Targets />} />
+          <Route path="/targets/:id" element={<TargetDetail />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/learning" element={<Learning />} />
+          <Route path="/organization" element={<Organization />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings/integrations" element={<Integrations />} />
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
