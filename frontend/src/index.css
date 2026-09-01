@@ -1,1 +1,31 @@
-// Hello World
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global chrome — FRONTEND_SPEC_ENHANCED.md design tokens:
+   bg-base #0F1219 (warm off-black), Inter body font, dark color-scheme. */
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-[#0F1219] text-slate-200 antialiased;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Slim dark scrollbars for the app chrome. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2d3748 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2d3748;
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}

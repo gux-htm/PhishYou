@@ -1,0 +1,17 @@
+# --- Python (backend) ------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# --- Secrets — NEVER commit credentials --------------------------------
+backend/.env
+backend/ai_config.json
+
+# --- Node / vite (frontend) -------------------------------------------
+frontend/node_modules/
+frontend/dist/
+
+# --- Misc ---------------------------------------------------------------
+.DS_Store
+*.log
