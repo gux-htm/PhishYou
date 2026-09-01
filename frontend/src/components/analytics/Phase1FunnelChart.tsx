@@ -1,4 +1,4 @@
-import { Funnel, FunnelChart, LabelList, ResponsiveContainer, Tooltip } from 'recharts';
+import { Cell, Funnel, FunnelChart, LabelList, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface Phase1FunnelChartProps {
   data: { stage: string; value: number }[];
@@ -28,7 +28,7 @@ export function Phase1FunnelChart({ data }: Phase1FunnelChartProps) {
               formatter={(value: unknown) => String(value)}
             />
             {data.map((item, index) => (
-              <cell key={`${item.stage}-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell key={`${item.stage}-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Funnel>
         </FunnelChart>
