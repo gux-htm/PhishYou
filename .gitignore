@@ -1,0 +1,24 @@
+# Environment secrets
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Runtime data / local stores
+backend/data/
+backend/dist/
+
+# Logs
+*.log
+nohup.out
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/

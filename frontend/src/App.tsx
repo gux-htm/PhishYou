@@ -22,6 +22,7 @@ import Phase1LiveMonitor from './pages/Phase1LiveMonitor';
 import Phase1Analytics from './pages/Phase1Analytics';
 import CampaignWorkspace from './pages/CampaignWorkspace';
 import AgentTools from './pages/AgentTools';
+import AIChat from './pages/AIChat';
 
 const Product = ({ children }: { children: ReactNode }) => <AppFrame>{children}</AppFrame>;
 
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="/learning" element={<Product><Learning /></Product>} />
           <Route path="/campaigns/:id/live" element={<Product><CampaignLiveRoute /></Product>} />
           <Route path="/tools" element={<Product><AgentTools /></Product>} />
+          <Route path="/tools/ai-chat" element={<Product><AIChat /></Product>} />
           <Route path="/organization" element={<Product><Organization /></Product>} />
           <Route path="/users" element={<Product><Users /></Product>} />
           <Route path="/settings" element={<Product><Settings /></Product>} />

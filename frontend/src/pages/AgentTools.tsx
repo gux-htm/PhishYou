@@ -1,4 +1,4 @@
-import { ArrowUpRight, Bell, Bot, BrainCircuit, Mail, MessageCircle, Phone, Sparkles, TrendingUp, Users } from 'lucide-react';
+import { ArrowUpRight, Bell, Bot, BrainCircuit, Mail, MessageCircle, MessageSquare, Phone, Sparkles, TrendingUp, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 type ToolStatus = 'active' | 'configured' | 'pending';
@@ -13,6 +13,14 @@ type AgentTool = {
 };
 
 const tools: AgentTool[] = [
+  {
+    id: 'ai-chat',
+    name: 'AI Chat',
+    description: 'Send live messages to the configured LLM provider and verify real responses. Conversation history stays in this session.',
+    status: 'configured',
+    detail: 'OpenAI-compatible / Qwen',
+    Icon: MessageSquare,
+  },
   {
     id: 'email-simulator',
     name: 'Email Simulator',
@@ -92,7 +100,7 @@ export default function AgentTools() {
         </div>
         <div className="py-command-meta">
           <span>
-            <Sparkles size={14} /> 6 TOOLS REGISTERED
+            <Sparkles size={14} /> 7 TOOLS REGISTERED
           </span>
           <span>Updated 4 minutes ago</span>
         </div>
@@ -146,7 +154,7 @@ export default function AgentTools() {
               color: 'var(--muted)',
             }}
           >
-            6 TOTAL · 3 ACTIVE
+            7 TOTAL · 4 ACTIVE
           </span>
         </div>
 
@@ -260,7 +268,7 @@ export default function AgentTools() {
                     {tool.detail}
                   </span>
                   <Link
-                    to="/settings/integrations"
+                    to={tool.id === 'ai-chat' ? '/tools/ai-chat' : '/settings/integrations'}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -271,7 +279,7 @@ export default function AgentTools() {
                       letterSpacing: '0.04em',
                     }}
                   >
-                    Configure <ArrowUpRight size={14} />
+                    {tool.id === 'ai-chat' ? 'Open chat' : 'Configure'} <ArrowUpRight size={14} />
                   </Link>
                 </div>
               </article>

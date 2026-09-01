@@ -15,9 +15,11 @@ import { useEffect, useState } from 'react';
 import {
   AlertTriangle,
   BadgeCheck,
+  Bot,
   Check,
   CheckCircle2,
   Copy,
+  Database,
   Eye,
   EyeOff,
   ExternalLink,
@@ -33,9 +35,23 @@ import {
   Save,
   Smartphone,
   Trash2,
-  Voicemail,
   XCircle,
 } from 'lucide-react';
+import {
+  fetchAIConfig,
+  getErrorMessage,
+  saveAIConfig,
+  testAIConnection,
+  type AIConfig,
+} from '../services/ai';
+import {
+  fetchDBConfig,
+  getDBErrorMessage,
+  saveDBConfig,
+  testDBConnection,
+  type DBConfig,
+  type DBType,
+} from '../services/db';
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -395,15 +411,66 @@ export default function Integrations() {
   const [data, setData] = useState<IntegrationsData | null>(null);
   const [authToken, setAuthToken] = useState('••••••••••••••••');
   const [smtpPassword, setSmtpPassword] = useState('••••••••••••');
-  const [qwenKey, setQwenKey] = useState('sk-demo-not-a-real-key');
   const [saving, setSaving] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const [verifying, setVerifying] = useState<string | null>(null);
+
+  const [aiForm, setAiForm] = useState<AIConfig>({
+    provider: 'qwen',
+    model: 'qwen-max',
+    endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+    apiKey: '',
+  });
+  const [aiSaving, setAiSaving] = useState(false);
+  const [aiSaved, setAiSaved] = useState(false);
+  const [aiTesting, setAiTesting] = useState(false);
+  const [aiTestResult, setAiTestResult] = useState<'connected' | 'error' | null>(null);
+  const [aiTestMessage, setAiTestMessage] = useState<string | null>(null);
+
+  const [dbForm, setDbForm] = useState<DBConfig>({
+    type: '',
+    host: '',
+    port: 5432,
+    database: '',
+    username: '',
+    password: '',
+    ssl: false,
+  });
+  const [dbSaving, setDbSaving] = useState(false);
+  const [dbSaved, setDbSaved] = useState(false);
+  const [dbTesting, setDbTesting] = useState(false);
+  const [dbTestResult, setDbTestResult] = useState<'connected' | 'error' | null>(null);
+  const [dbTestMessage, setDbTestMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchIntegrations()
       .then(setData)
       .catch(() => setData(DEMO_DATA)); // demo fallback
+
+    fetchAIConfig()
+      .then((config) => {
+        setAiForm((prev) => ({
+          ...prev,
+          provider: config.provider ?? prev.provider,
+          model: config.model ?? prev.model,
+          endpoint: config.endpoint ?? prev.endpoint,
+        }));
+      })
+      .catch(() => {});
+
+    fetchDBConfig()
+      .then((config) => {
+        setDbForm({
+          type: config.type ?? '',
+          host: config.host ?? '',
+          port: config.port ?? 5432,
+          database: config.database ?? '',
+          username: config.username ?? '',
+          password: '',
+          ssl: config.ssl ?? false,
+        });
+      })
+      .catch(() => {});
   }, []);
 
   if (!data) {
@@ -471,6 +538,78 @@ export default function Integrations() {
           }
         : d,
     );
+  };
+
+  const saveAI = async () => {
+    setAiSaving(true);
+    setAiSaved(false);
+    setAiTestResult(null);
+    try {
+      await saveAIConfig(aiForm);
+      setAiSaved(true);
+      setTimeout(() => setAiSaved(false), 2500);
+    } catch (err) {
+      setAiTestResult('error');
+      setAiTestMessage(getErrorMessage(err));
+    } finally {
+      setAiSaving(false);
+    }
+  };
+
+  const testAI = async () => {
+    setAiTesting(true);
+    setAiTestResult(null);
+    setAiTestMessage(null);
+    try {
+      const result = await testAIConnection();
+      if (result.success) {
+        setAiTestResult('connected');
+      } else {
+        setAiTestResult('error');
+        setAiTestMessage(result.message ?? 'Connection test failed.');
+      }
+    } catch (err) {
+      setAiTestResult('error');
+      setAiTestMessage(getErrorMessage(err));
+    } finally {
+      setAiTesting(false);
+    }
+  };
+
+  const saveDB = async () => {
+    setDbSaving(true);
+    setDbSaved(false);
+    setDbTestResult(null);
+    try {
+      await saveDBConfig(dbForm);
+      setDbSaved(true);
+      setTimeout(() => setDbSaved(false), 2500);
+    } catch (err) {
+      setDbTestResult('error');
+      setDbTestMessage(getDBErrorMessage(err));
+    } finally {
+      setDbSaving(false);
+    }
+  };
+
+  const testDB = async () => {
+    setDbTesting(true);
+    setDbTestResult(null);
+    setDbTestMessage(null);
+    try {
+      const result = await testDBConnection();
+      if (result.success) {
+        setDbTestResult('connected');
+      } else {
+        setDbTestResult('error');
+        setDbTestMessage(result.message ?? 'Database connection failed.');
+      }
+    } catch (err) {
+      setDbTestResult('error');
+      setDbTestMessage(getDBErrorMessage(err));
+    } finally {
+      setDbTesting(false);
+    }
   };
 
   const connectSocial = (platform: 'linkedin' | 'instagram') => {
@@ -728,86 +867,288 @@ export default function Integrations() {
         <SaveRow onSave={save('smtp')} saving={saving === 'smtp'} saved={saved === 'smtp'} />
       </section>
 
-      {/* Alibaba Cloud Qwen */}
-      <section aria-label="Alibaba Cloud Qwen integration" className={panel}>
+      {/* AI / LLM */}
+      <section aria-label="AI LLM integration" className={panel}>
         <CardHeader
-          icon={Voicemail}
-          title="Alibaba Cloud — Qwen (Model Studio)"
-          subtitle="LLM + TTS generation for simulations"
-          status={data.qwen.status}
+          icon={Bot}
+          title="AI / LLM"
+          subtitle="Configure any OpenAI-compatible provider"
+          status={
+            aiTestResult === 'connected'
+              ? 'connected'
+              : aiTestResult === 'error'
+                ? 'error'
+                : 'not_configured'
+          }
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SecretField
-            id="qwen-key"
-            labelText="API Key"
-            value={qwenKey}
-            onChange={setQwenKey}
-            placeholder="sk-xxxxxxxxxxxxxxxx"
-          />
-          <Field
-            id="qwen-endpoint"
-            labelText="Endpoint"
-            value={data.qwen.endpoint}
-            onChange={(v) => setData((d) => (d ? { ...d, qwen: { ...d.qwen, endpoint: v } } : d))}
-            placeholder="https://dashscope.aliyuncs.com/api/v1"
-          />
           <div>
-            <label htmlFor="qwen-model" className={label}>
-              Model
+            <label htmlFor="ai-provider" className={label}>
+              Provider
             </label>
             <select
-              id="qwen-model"
-              value={data.qwen.model}
+              id="ai-provider"
+              value={aiForm.provider}
               onChange={(e) =>
-                setData((d) =>
-                  d
-                    ? {
-                        ...d,
-                        qwen: { ...d.qwen, model: e.target.value as IntegrationsData['qwen']['model'] },
-                      }
-                    : d,
-                )
+                setAiForm((prev) => ({ ...prev, provider: e.target.value }))
               }
               className={input}
             >
-              <option value="qwen-max">Qwen-Max — adversarial conversation</option>
-              <option value="qwen-plus">Qwen-Plus — extraction &amp; summarization</option>
-              <option value="qwen-turbo">Qwen-Turbo — classifiers &amp; filters</option>
+              <option value="qwen">Qwen (Alibaba Cloud)</option>
+              <option value="openai">OpenAI</option>
+              <option value="openai-compatible">OpenAI-compatible (custom)</option>
             </select>
-            <p className="text-xs text-slate-500 mt-1">
-              Per-function allocation is defined in ALIBABA_QWEN_INTEGRATION.md §1.
-            </p>
+            <p className="text-xs text-slate-500 mt-1">Pick the provider protocol.</p>
           </div>
-          <div>
-            <label htmlFor="qwen-budget" className={label}>
-              Token Budget Alert Threshold
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                id="qwen-budget"
-                type="number"
-                min={10}
-                max={100}
-                value={data.qwen.tokenBudgetThreshold}
-                onChange={(e) =>
-                  setData((d) =>
-                    d
-                      ? {
-                          ...d,
-                          qwen: { ...d.qwen, tokenBudgetThreshold: Number(e.target.value) || 0 },
-                        }
-                      : d,
-                  )
-                }
-                className={`${input} w-28 font-mono`}
-              />
-              <p className="text-xs text-slate-500">Alert when monthly token spend exceeds this %.</p>
-            </div>
-          </div>
+          <Field
+            id="ai-model"
+            labelText="Model"
+            value={aiForm.model}
+            onChange={(v) => setAiForm((prev) => ({ ...prev, model: v }))}
+            placeholder="e.g. qwen-max, gpt-4o"
+          />
+          <Field
+            id="ai-endpoint"
+            labelText="Endpoint"
+            value={aiForm.endpoint}
+            onChange={(v) => setAiForm((prev) => ({ ...prev, endpoint: v }))}
+            placeholder="https://api.provider.com/v1/chat/completions"
+          />
+          <SecretField
+            id="ai-api-key"
+            labelText="API Key"
+            value={aiForm.apiKey}
+            onChange={(v) => setAiForm((prev) => ({ ...prev, apiKey: v }))}
+            placeholder="sk-xxxxxxxxxxxxxxxx"
+          />
         </div>
 
-        <SaveRow onSave={save('qwen')} saving={saving === 'qwen'} saved={saved === 'qwen'} />
+        <div className="flex items-center gap-3 mt-5">
+          <button
+            type="button"
+            className={primaryButton}
+            onClick={saveAI}
+            disabled={aiSaving}
+          >
+            {aiSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                Saving…
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" aria-hidden="true" />
+                Save Changes
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            className={secondaryButton}
+            onClick={testAI}
+            disabled={aiTesting || aiSaving}
+          >
+            {aiTesting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                Testing…
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" aria-hidden="true" />
+                Test Connection
+              </>
+            )}
+          </button>
+          {aiSaved && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#06D369]">
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+              Saved
+            </span>
+          )}
+          {aiTestResult === 'connected' && !aiSaved && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#06D369]">
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+              Connected
+            </span>
+          )}
+          {aiTestResult === 'error' && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#FF4757]">
+              <XCircle className="w-4 h-4" aria-hidden="true" />
+              {aiTestMessage ?? 'Connection failed'}
+            </span>
+          )}
+        </div>
+      </section>
+
+      {/* Database */}
+      <section aria-label="Database integration" className={panel}>
+        <CardHeader
+          icon={Database}
+          title="Database"
+          subtitle="PostgreSQL or SQLite connection"
+          status={
+            dbTestResult === 'connected'
+              ? 'connected'
+              : dbTestResult === 'error'
+                ? 'error'
+                : 'not_configured'
+          }
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="db-type" className={label}>
+              Database Type
+            </label>
+            <select
+              id="db-type"
+              value={dbForm.type}
+              onChange={(e) =>
+                setDbForm((prev) => ({
+                  ...prev,
+                  type: e.target.value as DBType,
+                  port: e.target.value === 'sqlite' ? null : prev.port ?? 5432,
+                }))
+              }
+              className={input}
+            >
+              <option value="">Select type…</option>
+              <option value="postgresql">PostgreSQL</option>
+              <option value="sqlite">SQLite</option>
+            </select>
+          </div>
+          {dbForm.type === 'sqlite' ? (
+            <Field
+              id="db-path"
+              labelText="Database File Path"
+              value={dbForm.database}
+              onChange={(v) => setDbForm((prev) => ({ ...prev, database: v }))}
+              placeholder="/path/to/phishyou.db"
+            />
+          ) : (
+            <>
+              <Field
+                id="db-host"
+                labelText="Host"
+                value={dbForm.host}
+                onChange={(v) => setDbForm((prev) => ({ ...prev, host: v }))}
+                placeholder="localhost"
+              />
+              <div>
+                <label htmlFor="db-port" className={label}>
+                  Port
+                </label>
+                <input
+                  id="db-port"
+                  type="number"
+                  value={dbForm.port ?? ''}
+                  onChange={(e) =>
+                    setDbForm((prev) => ({
+                      ...prev,
+                      port: e.target.value ? Number(e.target.value) : null,
+                    }))
+                  }
+                  placeholder="5432"
+                  className={`${input} w-28 font-mono`}
+                />
+              </div>
+              <Field
+                id="db-name"
+                labelText="Database Name"
+                value={dbForm.database}
+                onChange={(v) => setDbForm((prev) => ({ ...prev, database: v }))}
+                placeholder="phishyou"
+              />
+              <Field
+                id="db-user"
+                labelText="Username"
+                value={dbForm.username}
+                onChange={(v) => setDbForm((prev) => ({ ...prev, username: v }))}
+                placeholder="postgres"
+              />
+              <SecretField
+                id="db-password"
+                labelText="Password"
+                value={dbForm.password}
+                onChange={(v) => setDbForm((prev) => ({ ...prev, password: v }))}
+                placeholder="Enter password"
+              />
+              <div className="flex items-center gap-2 md:col-span-2">
+                <input
+                  id="db-ssl"
+                  type="checkbox"
+                  checked={dbForm.ssl}
+                  onChange={(e) =>
+                    setDbForm((prev) => ({ ...prev, ssl: e.target.checked }))
+                  }
+                  className="accent-[#2FD9C7] w-4 h-4"
+                />
+                <label htmlFor="db-ssl" className="text-sm text-slate-300">
+                  Require SSL
+                </label>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 mt-5">
+          <button
+            type="button"
+            className={primaryButton}
+            onClick={saveDB}
+            disabled={dbSaving || !dbForm.type}
+          >
+            {dbSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                Saving…
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" aria-hidden="true" />
+                Save Changes
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            className={secondaryButton}
+            onClick={testDB}
+            disabled={dbTesting || dbSaving || !dbForm.type}
+          >
+            {dbTesting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                Testing…
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-4 h-4" aria-hidden="true" />
+                Test Connection
+              </>
+            )}
+          </button>
+          {dbSaved && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#06D369]">
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+              Saved
+            </span>
+          )}
+          {dbTestResult === 'connected' && !dbSaved && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#06D369]">
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+              Connected
+            </span>
+          )}
+          {dbTestResult === 'error' && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-[#FF4757]">
+              <XCircle className="w-4 h-4" aria-hidden="true" />
+              {dbTestMessage ?? 'Connection failed'}
+            </span>
+          )}
+        </div>
       </section>
 
       {/* LinkedIn / Instagram OAuth */}

@@ -7,6 +7,7 @@ import { Learning } from './pages/Learning';
 import LiveCampaignMonitor from './pages/LiveCampaignMonitor';
 import Integrations from './pages/Integrations';
 import Organization from './pages/Organization';
+import AIChat from './pages/AIChat';
 import NotFound from './pages/NotFound';
 
 export const routes: RouteObject[] = [
@@ -17,5 +18,6 @@ export const routes: RouteObject[] = [
   { path: '/campaigns/:id/live', element: <LiveCampaignMonitor /> },
   { path: '/settings/integrations', element: <Integrations /> },
   { path: '/organization', element: <Organization /> },
+  { path: '/tools/ai-chat', element: <AIChat /> },
   { path: '*', element: <NotFound /> },
 ];

@@ -1,0 +1,61 @@
+import { apiFetch, ApiError } from './api';
+
+export type AIStatus = 'not_configured' | 'configured' | 'testing' | 'connected' | 'error';
+
+export interface AIConfig {
+  provider: string;
+  model: string;
+  endpoint: string;
+  apiKey: string;
+}
+
+export interface AIStatusResponse {
+  status: 'not_configured' | 'configured';
+  provider: string | null;
+  model: string | null;
+  endpoint: string | null;
+}
+
+export interface TestConnectionResponse {
+  success: boolean;
+  status: AIStatus;
+  message?: string;
+}
+
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatResponse {
+  content: string;
+}
+
+export function fetchAIConfig(): Promise<AIStatusResponse> {
+  return apiFetch<AIStatusResponse>('/api/v1/ai/config');
+}
+
+export function saveAIConfig(config: AIConfig): Promise<AIStatusResponse> {
+  return apiFetch<AIStatusResponse>('/api/v1/ai/config', {
+    method: 'POST',
+    body: config,
+  });
+}
+
+export function testAIConnection(): Promise<TestConnectionResponse> {
+  return apiFetch<TestConnectionResponse>('/api/v1/ai/test-connection', { method: 'POST' });
+}
+
+export function sendChatMessage(messages: ChatMessage[]): Promise<ChatResponse> {
+  return apiFetch<ChatResponse>('/api/v1/ai/chat', {
+    method: 'POST',
+    body: { messages },
+    timeoutMs: 30000,
+  });
+}
+
+export function getErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) return err.message;
+  if (err instanceof Error) return err.message;
+  return 'An unexpected error occurred.';
+}
