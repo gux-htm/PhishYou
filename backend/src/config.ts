@@ -5,9 +5,7 @@ export interface AIConfig extends StoredAIConfig {}
 
 function env(key: string, fallback?: string): string {
   const value = process.env[key];
-  if (value === undefined && fallback === undefined) {
-    return '';
-  }
+  if (value === undefined && fallback === undefined) return '';
   return value ?? fallback ?? '';
 }
 
@@ -15,28 +13,30 @@ export const PORT = Number(env('PORT', '4000')) || 4000;
 
 export function getEnvAIConfig(): AIConfig {
   return {
-    provider: env('LLM_PROVIDER', 'qwen'),
+    provider: env('LLM_PROVIDER'),
     apiKey: env('LLM_API_KEY'),
-    model: env('LLM_MODEL', 'qwen-max'),
-    endpoint: env(
-      'LLM_ENDPOINT',
-      'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
-    ),
+    model: env('LLM_MODEL'),
+    endpoint: env('LLM_ENDPOINT'),
   };
 }
 
+/**
+ * User-selected protocol/model/endpoint can come from the integration UI.
+ * When Vercel or another host provides LLM_API_KEY, that secret always wins
+ * and is never returned to the browser.
+ */
 export function mergeAIConfig(stored: Partial<AIConfig>): AIConfig {
   const envConfig = getEnvAIConfig();
   return {
-    provider: stored.provider || envConfig.provider,
-    apiKey: stored.apiKey || envConfig.apiKey,
-    model: stored.model || envConfig.model,
-    endpoint: stored.endpoint || envConfig.endpoint,
+    provider: stored.provider || envConfig.provider || 'auto',
+    apiKey: envConfig.apiKey || stored.apiKey || '',
+    model: stored.model || envConfig.model || '',
+    endpoint: stored.endpoint || envConfig.endpoint || '',
   };
 }
 
 export function isAIConfigured(config: AIConfig): boolean {
-  return Boolean(config.provider && config.apiKey && config.model && config.endpoint);
+  return Boolean(config.apiKey && config.model && config.endpoint);
 }
 
 export interface DBConfig extends StoredDBConfig {}
@@ -60,13 +60,7 @@ export function getEnvDBConfig(): DBConfig {
     }
   }
   return {
-    type: '',
-    host: '',
-    port: null,
-    database: '',
-    username: '',
-    password: '',
-    ssl: false,
+    type: '', host: '', port: null, database: '', username: '', password: '', ssl: false,
   };
 }
 
