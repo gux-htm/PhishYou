@@ -415,10 +415,11 @@ export default function Integrations() {
   const [saved, setSaved] = useState<string | null>(null);
   const [verifying, setVerifying] = useState<string | null>(null);
 
+  const [aiConfigStatus, setAiConfigStatus] = useState<'not_configured' | 'configured'>('not_configured');
   const [aiForm, setAiForm] = useState<AIConfig>({
-    provider: 'qwen',
-    model: 'qwen-max',
-    endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+    provider: '',
+    model: '',
+    endpoint: '',
     apiKey: '',
   });
   const [aiSaving, setAiSaving] = useState(false);
@@ -449,6 +450,7 @@ export default function Integrations() {
 
     fetchAIConfig()
       .then((config) => {
+        setAiConfigStatus(config.status);
         setAiForm((prev) => ({
           ...prev,
           provider: config.provider ?? prev.provider,
@@ -545,7 +547,8 @@ export default function Integrations() {
     setAiSaved(false);
     setAiTestResult(null);
     try {
-      await saveAIConfig(aiForm);
+      const saved = await saveAIConfig(aiForm);
+      setAiConfigStatus(saved.status);
       setAiSaved(true);
       setTimeout(() => setAiSaved(false), 2500);
     } catch (err) {
@@ -878,7 +881,9 @@ export default function Integrations() {
               ? 'connected'
               : aiTestResult === 'error'
                 ? 'error'
-                : 'not_configured'
+                : aiConfigStatus === 'configured'
+                  ? 'connected'
+                  : 'not_configured'
           }
         />
 
@@ -887,19 +892,17 @@ export default function Integrations() {
             <label htmlFor="ai-provider" className={label}>
               Provider
             </label>
-            <select
+            <input
               id="ai-provider"
+              type="text"
               value={aiForm.provider}
               onChange={(e) =>
                 setAiForm((prev) => ({ ...prev, provider: e.target.value }))
               }
+              placeholder="e.g. qwen, openai, openai-compatible"
               className={input}
-            >
-              <option value="qwen">Qwen (Alibaba Cloud)</option>
-              <option value="openai">OpenAI</option>
-              <option value="openai-compatible">OpenAI-compatible (custom)</option>
-            </select>
-            <p className="text-xs text-slate-500 mt-1">Pick the provider protocol.</p>
+            />
+            <p className="text-xs text-slate-500 mt-1">Any OpenAI-compatible provider name.</p>
           </div>
           <Field
             id="ai-model"
