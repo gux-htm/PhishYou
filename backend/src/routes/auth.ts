@@ -46,9 +46,10 @@ authRouter.post('/register', async (req, res) => {
     const existing = await databaseService.findUserByEmail(email);
     if (existing) return res.status(409).json({ error: 'An account with this email already exists.' });
     const user = await databaseService.createUser({ name: name.trim(), email: normalizeEmail(email), password, organization: organization.trim(), role: role?.trim() || 'Security Analyst' });
-    const { result, url } = await issueVerification(user);
-    const response = { success: true, verificationRequired: true, email: user.email, ...(result.simulated || process.env.NODE_ENV !== 'production' ? { verificationUrl: url } : {}) };
-    return res.status(201).json(response);
+
+    // First-run accounts must be able to enter the product before SMTP or MFA is configured.
+    // Email verification remains available as an optional, user-enabled security step.
+    return res.status(201).json({ success: true, verificationRequired: false, email: user.email });
   } catch (error) { return res.status(500).json({ error: error instanceof Error ? error.message : 'Registration failed.' }); }
 });
 
@@ -78,7 +79,6 @@ authRouter.post('/login', async (req, res) => {
     if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
     const user = await databaseService.findUserByEmail(email);
     if (!user || !verifyPassword(password, user.passwordSalt, user.passwordHash)) return res.status(401).json({ error: 'Invalid email or password.' });
-    if (!user.emailVerifiedAt) return res.status(403).json({ error: 'Email address is not verified. Check your verification email.' });
     await databaseService.updateUser(user.id, { lastLoginAt: new Date().toISOString() });
     return res.json({ success: true, token: issueToken(user), user: publicUser(user) });
   } catch (error) { return res.status(500).json({ error: error instanceof Error ? error.message : 'Login failed.' }); }
