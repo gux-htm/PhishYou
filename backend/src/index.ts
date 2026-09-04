@@ -11,6 +11,7 @@ import { monitoringRouter } from './routes/monitoring.js';
 import { initStore, db } from './store.js';
 import { databaseService } from './services/database.js';
 import { mailWatcher } from './services/mailWatcher.js';
+import { processUnansweredReplies } from './services/replyAutomation.js';
 
 function hydrateEmailEnvironment() {
   const email = db.data?.email;
@@ -30,9 +31,7 @@ function hydrateEmailEnvironment() {
     IMAP_PASS: email.imapPass,
     IMAP_MAILBOX: email.imapMailbox,
   };
-  for (const [key, value] of Object.entries(values)) {
-    if (value) process.env[key] = value;
-  }
+  for (const [key, value] of Object.entries(values)) if (value) process.env[key] = value;
 }
 
 async function main() {
@@ -54,6 +53,7 @@ async function main() {
     console.log(`PhishYou backend listening on http://localhost:${PORT}`);
     console.log(`Database ready at ${databaseService.location}`);
     if (mailWatcher.isConfigured()) void mailWatcher.start();
+    setInterval(() => { void processUnansweredReplies().catch((error) => console.error('[replyAutomation]', error)); }, 15000);
   });
 }
 
