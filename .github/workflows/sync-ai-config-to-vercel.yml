@@ -1,0 +1,77 @@
+name: Sync AI configuration to Vercel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync-and-deploy:
+    name: Sync AI configuration and deploy
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+      LLM_MODEL: ${{ vars.LLM_MODEL }}
+      LLM_ENDPOINT: ${{ vars.LLM_ENDPOINT }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate required configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID LLM_API_KEY LLM_PROVIDER LLM_MODEL LLM_ENDPOINT; do
+            if [ -z "${!name:-}" ]; then
+              echo "Missing required GitHub secret or variable: $name" >&2
+              exit 1
+            fi
+          done
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Sync non-secret AI configuration to Vercel
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          vercel env add LLM_PROVIDER production --value "$LLM_PROVIDER" --force --yes --token="$VERCEL_TOKEN"
+          vercel env add LLM_MODEL production --value "$LLM_MODEL" --force --yes --token="$VERCEL_TOKEN"
+          vercel env add LLM_ENDPOINT production --value "$LLM_ENDPOINT" --force --yes --token="$VERCEL_TOKEN"
+
+      - name: Sync LLM API key to Vercel as a sensitive variable
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          vercel env add LLM_API_KEY production --value "$LLM_API_KEY" --sensitive --force --yes --token="$VERCEL_TOKEN"
+
+      - name: Pull Vercel production settings
+        working-directory: frontend
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build production deployment
+        working-directory: frontend
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy production build
+        working-directory: frontend
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+      - name: Verify public AI configuration endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          response="$(curl --fail --silent --show-error https://phish-you.vercel.app/api/v1/ai/config)"
+          echo "$response"
+          echo "$response" | grep -q '"status":"configured"'
+          echo "$response" | grep -q '"provider":"'"$LLM_PROVIDER"'"'
+          echo "$response" | grep -q '"model":"'"$LLM_MODEL"'"'
