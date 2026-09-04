@@ -1,9 +1,7 @@
 /**
  * PhishYou — Auth service
- * Spec: PHISHYOU_SPECS/02_ARCHITECTURE/API_CONTRACTS.md (OAuth2 + REST, /api/v1)
- *
- * Thin wrappers over the backend auth routes. Uses `apiFetch` with the anonymous
- * flag so registration/login never attach a stale token.
+ * Auth endpoints stay thin so pages can own the user experience while all
+ * credential and verification handling remains server-side.
  */
 import { apiFetch } from './api';
 
@@ -30,15 +28,43 @@ export interface RegisterInput {
   consent: boolean;
 }
 
+export interface RegisterResponse {
+  success: boolean;
+  verificationRequired: boolean;
+  email: string;
+  verificationUrl?: string;
+}
+
 export interface LoginInput {
   email: string;
   password: string;
 }
 
-export function register(input: RegisterInput): Promise<AuthResponse> {
-  return apiFetch<AuthResponse>('/api/v1/auth/register', {
+export interface VerifyEmailResponse {
+  success: boolean;
+  email: string;
+}
+
+export function register(input: RegisterInput): Promise<RegisterResponse> {
+  return apiFetch<RegisterResponse>('/api/v1/auth/register', {
     method: 'POST',
     body: input,
+    anonymous: true,
+  });
+}
+
+export function verifyEmail(token: string): Promise<VerifyEmailResponse> {
+  return apiFetch<VerifyEmailResponse>('/api/v1/auth/verify-email', {
+    method: 'POST',
+    body: { token },
+    anonymous: true,
+  });
+}
+
+export function resendVerificationEmail(email: string): Promise<RegisterResponse> {
+  return apiFetch<RegisterResponse>('/api/v1/auth/resend-verification', {
+    method: 'POST',
+    body: { email },
     anonymous: true,
   });
 }

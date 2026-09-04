@@ -2,12 +2,9 @@
  * PhishYou — Application database service
  * Spec: PHISHYOU_SPECS/02_ARCHITECTURE/DATABASE_SCHEMA.md
  *
- * A dependency-free persistence layer backed by lowdb (JSON file), matching the
- * existing `store.ts` config pattern. It holds the operational collections the
- * campaign + auth features need and is the single source of truth wired into the
- * campaign services (`campaignPersistence`, `campaignExecution`) and auth routes.
- *
- * Data file: backend/data/phishyou.db
+ * lowdb-backed operational store used by auth, campaign, interaction and
+ * audit services. The connector UI can configure an external database for
+ * future adapters; this service remains the existing application store.
  */
 import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
@@ -23,6 +20,9 @@ export interface StoredUser {
   role: string;
   passwordHash: string;
   passwordSalt: string;
+  emailVerifiedAt?: string;
+  emailVerificationHash?: string;
+  emailVerificationExpiresAt?: string;
   createdAt: string;
   lastLoginAt?: string;
 }
@@ -96,27 +96,19 @@ interface AppData {
 const filePath = join(dirname(import.meta.filename), '..', '..', 'data', 'phishyou.db');
 
 function defaultData(): AppData {
-  return {
-    users: [],
-    campaigns: [],
-    targets: [],
-    email_interactions: [],
-    campaign_events: [],
-  };
+  return { users: [], campaigns: [], targets: [], email_interactions: [], campaign_events: [] };
 }
 
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-/** Derive a salted scrypt hash for a plaintext password. */
 export function hashPassword(password: string): { passwordSalt: string; passwordHash: string } {
   const passwordSalt = randomBytes(16).toString('hex');
   const passwordHash = scryptSync(password, passwordSalt, 64).toString('hex');
   return { passwordSalt, passwordHash };
 }
 
-/** Constant-time password verification against a stored salt/hash pair. */
 export function verifyPassword(password: string, passwordSalt: string, passwordHash: string): boolean {
   try {
     const derived = scryptSync(password, passwordSalt, 64);
@@ -135,12 +127,10 @@ class DatabaseService {
     this.store = new Low<AppData>(new JSONFile(filePath), defaultData());
   }
 
-  /** Absolute path of the backing database file (for logging/diagnostics). */
   get location(): string {
     return filePath;
   }
 
-  /** Idempotently create the data dir + file and normalize collections. */
   async initialize(): Promise<void> {
     if (!this.initPromise) this.initPromise = this.runInit();
     return this.initPromise;
@@ -155,8 +145,20 @@ class DatabaseService {
     data.targets ??= [];
     data.email_interactions ??= [];
     data.campaign_events ??= [];
+
+    // Preserve access for accounts created before email verification existed.
+    const migrationTime = new Date().toISOString();
+    let migrated = false;
+    for (const user of data.users) {
+      if (!user.emailVerifiedAt && !user.emailVerificationHash) {
+        user.emailVerifiedAt = user.createdAt || migrationTime;
+        migrated = true;
+      }
+    }
+
     this.store.data = data;
-    await this.store.write();
+    if (migrated || !this.store.data) await this.store.write();
+    else await this.store.write();
   }
 
   private async ready(): Promise<AppData> {
@@ -168,18 +170,10 @@ class DatabaseService {
     await this.store.write();
   }
 
-  // ---------------------------------------------------------------- users
-
-  async createUser(input: {
-    email: string;
-    password: string;
-    name: string;
-    organization: string;
-    role?: string;
-  }): Promise<StoredUser> {
+  async createUser(input: { email: string; password: string; name: string; organization: string; role?: string }): Promise<StoredUser> {
     const data = await this.ready();
     const email = normalizeEmail(input.email);
-    if (data.users.some((u) => u.email === email)) {
+    if (data.users.some((user) => user.email === email)) {
       throw new Error('An account with this email already exists.');
     }
     const { passwordSalt, passwordHash } = hashPassword(input.password);
@@ -200,18 +194,17 @@ class DatabaseService {
 
   async findUserByEmail(email: string): Promise<StoredUser | null> {
     const data = await this.ready();
-    const normalized = normalizeEmail(email);
-    return data.users.find((u) => u.email === normalized) ?? null;
+    return data.users.find((user) => user.email === normalizeEmail(email)) ?? null;
   }
 
   async findUserById(id: string): Promise<StoredUser | null> {
     const data = await this.ready();
-    return data.users.find((u) => u.id === id) ?? null;
+    return data.users.find((user) => user.id === id) ?? null;
   }
 
   async updateUser(id: string, patch: Partial<StoredUser>): Promise<StoredUser | null> {
     const data = await this.ready();
-    const user = data.users.find((u) => u.id === id);
+    const user = data.users.find((candidate) => candidate.id === id);
     if (!user) return null;
     Object.assign(user, patch);
     await this.commit();
@@ -227,8 +220,6 @@ class DatabaseService {
     const data = await this.ready();
     return data.users.length;
   }
-
-  // ------------------------------------------------------------ campaigns
 
   async createCampaign(input: Partial<StoredCampaignRecord> & { name: string }): Promise<StoredCampaignRecord> {
     const data = await this.ready();
@@ -260,12 +251,12 @@ class DatabaseService {
 
   async getCampaign(id: string): Promise<StoredCampaignRecord | null> {
     const data = await this.ready();
-    return data.campaigns.find((c) => c.id === id) ?? null;
+    return data.campaigns.find((campaign) => campaign.id === id) ?? null;
   }
 
   async updateCampaign(id: string, patch: Partial<StoredCampaignRecord>): Promise<StoredCampaignRecord | null> {
     const data = await this.ready();
-    const campaign = data.campaigns.find((c) => c.id === id);
+    const campaign = data.campaigns.find((candidate) => candidate.id === id);
     if (!campaign) return null;
     Object.assign(campaign, patch, { updatedAt: new Date().toISOString() });
     await this.commit();
@@ -274,14 +265,12 @@ class DatabaseService {
 
   async listCampaigns(filter: { status?: string; createdBy?: string } = {}): Promise<StoredCampaignRecord[]> {
     const data = await this.ready();
-    return data.campaigns.filter((c) => {
-      if (filter.status && c.status !== filter.status) return false;
-      if (filter.createdBy && c.createdBy !== filter.createdBy) return false;
+    return data.campaigns.filter((campaign) => {
+      if (filter.status && campaign.status !== filter.status) return false;
+      if (filter.createdBy && campaign.createdBy !== filter.createdBy) return false;
       return true;
     });
   }
-
-  // -------------------------------------------------------------- targets
 
   async createTarget(input: Partial<StoredTargetRecord> & { campaignId: string; email: string }): Promise<StoredTargetRecord> {
     const data = await this.ready();
@@ -309,35 +298,26 @@ class DatabaseService {
 
   async getTarget(id: string): Promise<StoredTargetRecord | null> {
     const data = await this.ready();
-    return data.targets.find((t) => t.id === id) ?? null;
+    return data.targets.find((target) => target.id === id) ?? null;
   }
 
   async getTargetsByCampaign(campaignId: string): Promise<StoredTargetRecord[]> {
     const data = await this.ready();
-    return data.targets.filter((t) => t.campaignId === campaignId);
+    return data.targets.filter((target) => target.campaignId === campaignId);
   }
 
   async updateTarget(id: string, patch: Partial<StoredTargetRecord>): Promise<StoredTargetRecord | null> {
     const data = await this.ready();
-    const target = data.targets.find((t) => t.id === id);
+    const target = data.targets.find((candidate) => candidate.id === id);
     if (!target) return null;
     Object.assign(target, patch);
     await this.commit();
     return target;
   }
 
-  // --------------------------------------------- events + interactions
-
-  async logEvent(campaignId: string, targetId: string | null | undefined, type: string, meta: Record<string, unknown> = {}): Promise<StoredEvent> {
+  async logEvent(campaignId: string, targetId: string | null | undefined, type: string, meta: Record<string, unknown> = {}) {
     const data = await this.ready();
-    const event: StoredEvent = {
-      id: randomUUID(),
-      campaignId,
-      targetId: targetId ?? null,
-      type,
-      meta,
-      createdAt: new Date().toISOString(),
-    };
+    const event: StoredEvent = { id: randomUUID(), campaignId, targetId: targetId ?? null, type, meta, createdAt: new Date().toISOString() };
     data.campaign_events.push(event);
     await this.commit();
     return event;
@@ -345,26 +325,12 @@ class DatabaseService {
 
   async getEvents(campaignId: string): Promise<StoredEvent[]> {
     const data = await this.ready();
-    return data.campaign_events.filter((e) => e.campaignId === campaignId);
+    return data.campaign_events.filter((event) => event.campaignId === campaignId);
   }
 
-  async recordInteraction(input: {
-    campaignId: string;
-    targetId: string;
-    type: string;
-    success?: boolean;
-    meta?: Record<string, unknown>;
-  }): Promise<StoredInteraction> {
+  async recordInteraction(input: { campaignId: string; targetId: string; type: string; success?: boolean; meta?: Record<string, unknown> }) {
     const data = await this.ready();
-    const interaction: StoredInteraction = {
-      id: randomUUID(),
-      campaignId: input.campaignId,
-      targetId: input.targetId,
-      type: input.type,
-      success: input.success,
-      meta: input.meta ?? {},
-      createdAt: new Date().toISOString(),
-    };
+    const interaction: StoredInteraction = { id: randomUUID(), campaignId: input.campaignId, targetId: input.targetId, type: input.type, success: input.success, meta: input.meta ?? {}, createdAt: new Date().toISOString() };
     data.email_interactions.push(interaction);
     await this.commit();
     return interaction;
@@ -372,45 +338,30 @@ class DatabaseService {
 
   async getInteractions(campaignId: string): Promise<StoredInteraction[]> {
     const data = await this.ready();
-    return data.email_interactions.filter((i) => i.campaignId === campaignId);
+    return data.email_interactions.filter((interaction) => interaction.campaignId === campaignId);
   }
 
-  /**
-   * Locate a recorded interaction by the outbound Message-ID stored in its meta.
-   * Used to correlate an inbound reply (In-Reply-To / References) back to the
-   * campaign + target that received the original simulated email.
-   */
   async findInteractionByMessageId(messageId: string): Promise<StoredInteraction | null> {
     const needle = normalizeMessageId(messageId);
     if (!needle) return null;
     const data = await this.ready();
-    return (
-      data.email_interactions.find((i) => {
-        const stored = typeof i.meta?.messageId === 'string' ? normalizeMessageId(i.meta.messageId) : '';
-        return stored !== '' && stored === needle;
-      }) ?? null
-    );
+    return data.email_interactions.find((interaction) => typeof interaction.meta?.messageId === 'string' && normalizeMessageId(interaction.meta.messageId) === needle) ?? null;
   }
 
-  /** All targets across every campaign matching an email address (reply-correlation fallback). */
   async findTargetsByEmail(email: string): Promise<StoredTargetRecord[]> {
     const data = await this.ready();
     const normalized = normalizeEmail(email);
-    return data.targets.filter((t) => normalizeEmail(t.email) === normalized);
+    return data.targets.filter((target) => normalizeEmail(target.email) === normalized);
   }
 
-  /** True when a reply interaction with this inbound Message-ID was already recorded (dedup across restarts). */
   async hasReplyWithMessageId(campaignId: string, messageId: string): Promise<boolean> {
     const needle = normalizeMessageId(messageId);
     if (!needle) return false;
     const data = await this.ready();
-    return data.email_interactions.some(
-      (i) => i.campaignId === campaignId && i.type === 'reply' && typeof i.meta?.messageId === 'string' && normalizeMessageId(i.meta.messageId) === needle,
-    );
+    return data.email_interactions.some((interaction) => interaction.campaignId === campaignId && interaction.type === 'reply' && typeof interaction.meta?.messageId === 'string' && normalizeMessageId(interaction.meta.messageId) === needle);
   }
 }
 
-/** Strip angle brackets + surrounding whitespace and lowercase a Message-ID for stable comparison. */
 export function normalizeMessageId(messageId: string): string {
   return (messageId ?? '').trim().replace(/^<|>$/g, '').toLowerCase();
 }

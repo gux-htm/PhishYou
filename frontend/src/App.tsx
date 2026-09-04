@@ -2,14 +2,15 @@ import type { ReactNode } from 'react';
 import { BrowserRouter, Route, Routes, useParams } from 'react-router-dom';
 import { ThemeProvider } from './design/ThemeProvider';
 import { AppFrame } from './design/AppFrame';
+import ProtectedRoute from './components/common/ProtectedRoute';
 import { Landing } from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import EmailVerify from './pages/EmailVerify';
 import Dashboard from './pages/Dashboard';
 import CampaignList from './pages/CampaignList';
 import { Learning } from './pages/Learning';
 import LiveCampaignMonitor from './pages/LiveCampaignMonitor';
-import Integrations from './pages/Integrations';
 import Organization from './pages/Organization';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
@@ -24,12 +25,18 @@ import Phase1Analytics from './pages/Phase1Analytics';
 import CampaignWorkspace from './pages/CampaignWorkspace';
 import AgentTools from './pages/AgentTools';
 import AIChat from './pages/AIChat';
+import ToolSettings from './pages/ToolSettings';
+import CampaignChat from './pages/CampaignChat';
 
-const Product = ({ children }: { children: ReactNode }) => <AppFrame>{children}</AppFrame>;
+const Product = ({ children }: { children: ReactNode }) => (
+  <ProtectedRoute>
+    <AppFrame>{children}</AppFrame>
+  </ProtectedRoute>
+);
 
 function CampaignRoute() {
   const { id = '' } = useParams();
-  return id.startsWith('mock-phase1-') ? <Phase1CampaignDetail /> : <CampaignWorkspace />;
+  return id.startsWith('mock-phase1-') ? <Phase1CampaignDetail /> : <CampaignChat />;
 }
 
 function CampaignLiveRoute() {
@@ -45,6 +52,7 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<EmailVerify />} />
           <Route path="/dashboard" element={<Product><Dashboard /></Product>} />
           <Route path="/campaigns" element={<Product><CampaignList /></Product>} />
           <Route path="/campaigns/new" element={<Product><Phase1CampaignBuilder /></Product>} />
@@ -57,10 +65,11 @@ export default function App() {
           <Route path="/campaigns/:id/live" element={<Product><CampaignLiveRoute /></Product>} />
           <Route path="/tools" element={<Product><AgentTools /></Product>} />
           <Route path="/tools/ai-chat" element={<Product><AIChat /></Product>} />
+          <Route path="/tool-settings" element={<Product><ToolSettings /></Product>} />
           <Route path="/organization" element={<Product><Organization /></Product>} />
           <Route path="/users" element={<Product><Users /></Product>} />
           <Route path="/settings" element={<Product><Settings /></Product>} />
-          <Route path="/settings/integrations" element={<Product><Integrations /></Product>} />
+          <Route path="/settings/integrations" element={<Product><ToolSettings /></Product>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
