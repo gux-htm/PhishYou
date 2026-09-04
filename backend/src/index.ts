@@ -8,12 +8,36 @@ import { authRouter } from './routes/auth.js';
 import { campaignChatRouter } from './routes/campaignChat.js';
 import { campaignRouter } from './routes/campaign.js';
 import { monitoringRouter } from './routes/monitoring.js';
-import { initStore } from './store.js';
+import { initStore, db } from './store.js';
 import { databaseService } from './services/database.js';
 import { mailWatcher } from './services/mailWatcher.js';
 
+function hydrateEmailEnvironment() {
+  const email = db.data?.email;
+  if (!email) return;
+  const values: Record<string, string> = {
+    SMTP_HOST: email.host,
+    SMTP_PORT: String(email.port),
+    SMTP_SECURE: String(email.secure),
+    SMTP_USER: email.user,
+    SMTP_PASS: email.pass,
+    SMTP_FROM: email.from,
+    REPLY_TO: email.replyTo,
+    IMAP_HOST: email.imapHost,
+    IMAP_PORT: String(email.imapPort),
+    IMAP_SECURE: String(email.imapSecure),
+    IMAP_USER: email.imapUser,
+    IMAP_PASS: email.imapPass,
+    IMAP_MAILBOX: email.imapMailbox,
+  };
+  for (const [key, value] of Object.entries(values)) {
+    if (value) process.env[key] = value;
+  }
+}
+
 async function main() {
   await initStore();
+  hydrateEmailEnvironment();
   await databaseService.initialize();
   const app = express();
   app.use(cors());
