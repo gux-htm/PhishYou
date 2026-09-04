@@ -23,13 +23,8 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const result = await register({ name: form.name.trim(), organization: form.organization.trim(), email: form.email.trim(), role: form.role, password: form.password, consent: true });
-      const params = new URLSearchParams({ email: result.email });
-      if (result.verificationUrl) {
-        const token = new URL(result.verificationUrl).searchParams.get('token');
-        if (token) params.set('token', token);
-      }
-      navigate(`/verify-email?${params.toString()}`, { replace: true });
+      await register({ name: form.name.trim(), organization: form.organization.trim(), email: form.email.trim(), role: form.role, password: form.password, consent: true });
+      navigate(`/login?registered=${encodeURIComponent(form.email.trim())}`, { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Registration failed.');
     } finally {
