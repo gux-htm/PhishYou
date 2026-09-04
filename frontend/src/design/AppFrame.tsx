@@ -24,7 +24,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
         <nav>
           {nav.map(([to, label, Icon]) => {
             const [base, toHash] = to.split('#');
-            const active = pathname === base || (base === '/tool-settings' && hash === `#${toHash ?? ''}`);
+            const active = toHash ? pathname === base && hash === `#${toHash}` : pathname === base && !hash;
             return <Link onClick={() => setOpen(false)} className={active ? 'is-active' : ''} to={to} key={to}><Icon size={18}/><span>{label}</span></Link>;
           })}
         </nav>
@@ -34,11 +34,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <div className="py-main">
-        <header className="py-topbar">
-          <button className="py-menu" onClick={() => setOpen(!open)} aria-label="Toggle navigation">{open ? <X/> : <Menu/>}</button>
-          <div className="py-breadcrumb">PHISHYOU <span>/</span> INTELLIGENCE WORKSPACE</div>
-          <div className="py-top-actions"><button aria-label="Toggle theme" onClick={toggleTheme}>{theme === 'dark' ? <Sun size={18}/> : <Moon size={18}/>}</button><div className="py-avatar">OP</div></div>
-        </header>
+        <header className="py-topbar"><button className="py-menu" onClick={() => setOpen(!open)} aria-label="Toggle navigation">{open ? <X/> : <Menu/>}</button><div className="py-breadcrumb">PHISHYOU <span>/</span> INTELLIGENCE WORKSPACE</div><div className="py-top-actions"><button aria-label="Toggle theme" onClick={toggleTheme}>{theme === 'dark' ? <Sun size={18}/> : <Moon size={18}/>}</button><div className="py-avatar">OP</div></div></header>
         <main>{children}</main>
       </div>
     </div>
