@@ -20,9 +20,23 @@ export interface StoredDBConfig {
   ssl: boolean;
 }
 
+export interface StoredEmailConfig {
+  host: string;
+  port: number | null;
+  secure: boolean;
+  username: string;
+  password: string;
+  fromEmail: string;
+  fromName: string;
+  replyTo: string;
+  imapHost: string;
+  imapPort: number | null;
+}
+
 interface Data {
   ai: StoredAIConfig;
   db: StoredDBConfig;
+  email: StoredEmailConfig;
 }
 
 const defaultData: Data = {
@@ -40,6 +54,18 @@ const defaultData: Data = {
     username: '',
     password: '',
     ssl: false,
+  },
+  email: {
+    host: '',
+    port: 587,
+    secure: false,
+    username: '',
+    password: '',
+    fromEmail: '',
+    fromName: '',
+    replyTo: '',
+    imapHost: '',
+    imapPort: 993,
   },
 };
 

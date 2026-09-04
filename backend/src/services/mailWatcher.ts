@@ -21,6 +21,8 @@
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 import { databaseService, normalizeMessageId } from './database.js';
+import { mergeEmailConfig } from '../config.js';
+import { db } from '../store.js';
 
 export interface InboundReply {
   from?: string;
@@ -65,22 +67,16 @@ function env(key: string, fallback = ''): string {
   return value === undefined || value === '' ? fallback : value;
 }
 
-function deriveImapHost(smtpHost: string): string {
-  if (!smtpHost) return '';
-  if (smtpHost.startsWith('smtp.')) return `imap.${smtpHost.slice(5)}`;
-  if (smtpHost.startsWith('smtp')) return `imap${smtpHost.slice(4)}`;
-  return smtpHost;
-}
-
 function readImapConfig(): ImapConfig {
+  const merged = mergeEmailConfig(db.data?.email ?? {});
   const secure = env('IMAP_SECURE', 'true') === 'true';
-  const defaultPort = secure ? '993' : '143';
+  const defaultPort = secure ? 993 : 143;
   return {
-    host: env('IMAP_HOST') || deriveImapHost(env('SMTP_HOST')),
-    port: Number(env('IMAP_PORT', defaultPort)) || Number(defaultPort),
+    host: merged.imapHost || merged.host,
+    port: merged.imapPort ?? defaultPort,
     secure,
-    user: env('IMAP_USER') || env('SMTP_USER'),
-    pass: env('IMAP_PASS') || env('SMTP_PASS'),
+    user: merged.username,
+    pass: merged.password,
     mailbox: env('IMAP_MAILBOX', 'INBOX'),
     pollIntervalMs: Number(env('MAIL_POLL_INTERVAL_MS', '15000')) || 15000,
   };
@@ -110,6 +106,13 @@ class MailWatcher {
   private repliesDetected = 0;
   private lastPollAt: string | null = null;
   private lastError: string | null = null;
+  /** Invoked after a reply is persisted — lets the campaign agent respond. */
+  private replyListener: ((campaignId: string, targetId: string) => void) | null = null;
+
+  /** Register a callback fired for every matched, non-duplicate inbound reply. */
+  onReply(listener: (campaignId: string, targetId: string) => void): void {
+    this.replyListener = listener;
+  }
 
   isConfigured(): boolean {
     const cfg = readImapConfig();
@@ -315,6 +318,12 @@ class MailWatcher {
     this.repliesDetected += 1;
     // eslint-disable-next-line no-console
     console.log(`[mailWatcher] reply matched campaign=${campaignId} target=${targetId} via=${via}`);
+    try {
+      this.replyListener?.(campaignId, targetId);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[mailWatcher] reply listener failed:', error instanceof Error ? error.message : error);
+    }
     return { matched: true, campaignId, targetId, via };
   }
 }

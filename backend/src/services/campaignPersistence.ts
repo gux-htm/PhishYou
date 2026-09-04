@@ -168,6 +168,15 @@ class CampaignPersistenceService {
     return record ? toStoredCampaign(record) : null;
   }
 
+  /** Merge partial context fields (used by the agent as it learns from chat). */
+  async updateCampaignContext(
+    id: string,
+    patch: Partial<Pick<StoredCampaignRecord, 'name' | 'objective' | 'organizationContext' | 'scenarioContext' | 'timingContext' | 'tier' | 'senderConfig' | 'campaignConfig'>>,
+  ): Promise<StoredCampaign | null> {
+    const record = await databaseService.updateCampaign(id, patch as Partial<StoredCampaignRecord>);
+    return record ? toStoredCampaign(record) : null;
+  }
+
   async addTargetsToCampaign(campaignId: string, targets: CampaignTarget[]): Promise<StoredTarget[]> {
     const created: StoredTarget[] = [];
     for (const target of targets) {

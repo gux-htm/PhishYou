@@ -23,6 +23,10 @@ export interface StoredUser {
   role: string;
   passwordHash: string;
   passwordSalt: string;
+  emailVerified: boolean;
+  verificationCodeHash?: string;
+  verificationCodeExpiresAt?: string;
+  verificationSentAt?: string;
   createdAt: string;
   lastLoginAt?: string;
 }
@@ -85,12 +89,23 @@ export interface StoredEvent {
   createdAt: string;
 }
 
+/** One message in the operator ↔ agent chat thread for a campaign. */
+export interface StoredChatMessage {
+  id: string;
+  campaignId: string;
+  role: 'user' | 'assistant';
+  content: string;
+  kind?: string;
+  createdAt: string;
+}
+
 interface AppData {
   users: StoredUser[];
   campaigns: StoredCampaignRecord[];
   targets: StoredTargetRecord[];
   email_interactions: StoredInteraction[];
   campaign_events: StoredEvent[];
+  chat_messages: StoredChatMessage[];
 }
 
 const filePath = join(dirname(import.meta.filename), '..', '..', 'data', 'phishyou.db');
@@ -102,6 +117,7 @@ function defaultData(): AppData {
     targets: [],
     email_interactions: [],
     campaign_events: [],
+    chat_messages: [],
   };
 }
 
@@ -121,6 +137,22 @@ export function verifyPassword(password: string, passwordSalt: string, passwordH
   try {
     const derived = scryptSync(password, passwordSalt, 64);
     const stored = Buffer.from(passwordHash, 'hex');
+    return derived.length === stored.length && timingSafeEqual(derived, stored);
+  } catch {
+    return false;
+  }
+}
+
+/** Hash a 6-digit email-verification code (salted, never stored in plaintext). */
+export function hashVerificationCode(email: string, code: string): string {
+  return scryptSync(code.trim(), `verify:${normalizeEmail(email)}`, 32).toString('hex');
+}
+
+/** Constant-time check of a submitted verification code. */
+export function verifyVerificationCode(email: string, code: string, storedHash: string): boolean {
+  try {
+    const derived = Buffer.from(hashVerificationCode(email, code), 'hex');
+    const stored = Buffer.from(storedHash, 'hex');
     return derived.length === stored.length && timingSafeEqual(derived, stored);
   } catch {
     return false;
@@ -155,6 +187,7 @@ class DatabaseService {
     data.targets ??= [];
     data.email_interactions ??= [];
     data.campaign_events ??= [];
+    data.chat_messages ??= [];
     this.store.data = data;
     await this.store.write();
   }
@@ -191,6 +224,7 @@ class DatabaseService {
       role: input.role?.trim() || 'Security Analyst',
       passwordSalt,
       passwordHash,
+      emailVerified: false,
       createdAt: new Date().toISOString(),
     };
     data.users.push(user);
@@ -407,6 +441,30 @@ class DatabaseService {
     return data.email_interactions.some(
       (i) => i.campaignId === campaignId && i.type === 'reply' && typeof i.meta?.messageId === 'string' && normalizeMessageId(i.meta.messageId) === needle,
     );
+  }
+
+  // -------------------------------------------------------- chat messages
+
+  async addChatMessage(campaignId: string, role: 'user' | 'assistant', content: string, kind?: string): Promise<StoredChatMessage> {
+    const data = await this.ready();
+    const message: StoredChatMessage = {
+      id: randomUUID(),
+      campaignId,
+      role,
+      content,
+      kind,
+      createdAt: new Date().toISOString(),
+    };
+    data.chat_messages.push(message);
+    await this.commit();
+    return message;
+  }
+
+  async getChatMessages(campaignId: string): Promise<StoredChatMessage[]> {
+    const data = await this.ready();
+    return data.chat_messages
+      .filter((m) => m.campaignId === campaignId)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   }
 }
 

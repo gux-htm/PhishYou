@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import type { StoredAIConfig, StoredDBConfig } from './store.js';
+import type { StoredAIConfig, StoredDBConfig, StoredEmailConfig } from './store.js';
 
 export interface AIConfig extends StoredAIConfig {}
 
@@ -79,4 +79,42 @@ export function mergeDBConfig(stored: Partial<DBConfig>): DBConfig {
 
 export function isDBConfigured(config: DBConfig): boolean {
   return Boolean(config.type && ((config.type === 'sqlite' && config.database) || (config.host && config.port && config.database)));
+}
+
+export interface EmailConfig extends StoredEmailConfig {}
+
+export function getEnvEmailConfig(): EmailConfig {
+  return {
+    host: env('SMTP_HOST'),
+    port: Number(env('SMTP_PORT', '0')) || null,
+    secure: env('SMTP_SECURE', 'false') === 'true',
+    username: env('SMTP_USER'),
+    password: env('SMTP_PASS'),
+    fromEmail: env('SMTP_FROM') || env('EMAIL_FROM'),
+    fromName: env('SMTP_FROM_NAME'),
+    replyTo: env('REPLY_TO') || env('SMTP_REPLY_TO'),
+    imapHost: env('IMAP_HOST'),
+    imapPort: Number(env('IMAP_PORT', '0')) || null,
+  };
+}
+
+/** UI-entered credentials win; environment variables fill any gaps. */
+export function mergeEmailConfig(stored: Partial<EmailConfig>): EmailConfig {
+  const e = getEnvEmailConfig();
+  return {
+    host: stored.host || e.host,
+    port: stored.port ?? e.port,
+    secure: stored.secure ?? e.secure,
+    username: stored.username || e.username,
+    password: stored.password || e.password,
+    fromEmail: stored.fromEmail || e.fromEmail,
+    fromName: stored.fromName || e.fromName,
+    replyTo: stored.replyTo || e.replyTo,
+    imapHost: stored.imapHost || e.imapHost,
+    imapPort: stored.imapPort ?? e.imapPort,
+  };
+}
+
+export function isEmailConfigured(config: EmailConfig): boolean {
+  return Boolean(config.host && (config.fromEmail || config.username));
 }

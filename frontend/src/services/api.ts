@@ -25,11 +25,14 @@ export function getSessionUser(): AuthUser | null {
 export class ApiError extends Error {
   readonly status: number;
   readonly path: string;
-  constructor(message: string, status: number, path: string) {
+  /** Full parsed error payload (e.g. requiresVerification, devCode). */
+  readonly payload?: Record<string, unknown>;
+  constructor(message: string, status: number, path: string, payload?: Record<string, unknown>) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.path = path;
+    this.payload = payload;
   }
 }
 
@@ -68,13 +71,14 @@ export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promi
 
     if (!response.ok) {
       let detail = `HTTP ${response.status}`;
+      let payload: Record<string, unknown> | undefined;
       try {
-        const payload = (await response.json()) as { message?: string; error?: string };
-        detail = payload.message ?? payload.error ?? detail;
+        payload = (await response.json()) as Record<string, unknown>;
+        detail = (payload.message as string) ?? (payload.error as string) ?? detail;
       } catch {
         /* non-JSON error body — keep HTTP status text */
       }
-      throw new ApiError(detail, response.status, path);
+      throw new ApiError(detail, response.status, path, payload);
     }
 
     if (response.status === 204) return undefined as T;

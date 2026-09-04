@@ -16,6 +16,8 @@
  */
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
+import { mergeEmailConfig, isEmailConfigured } from '../config.js';
+import { db } from '../store.js';
 
 export interface SmtpConfig {
   host: string;
@@ -25,6 +27,13 @@ export interface SmtpConfig {
   pass: string;
   from: string;
   replyTo: string;
+}
+
+/** Format the From header as `"Name" <addr>` when a display name is set. */
+function formatFrom(fromEmail: string, fromName: string): string {
+  if (!fromName) return fromEmail;
+  if (fromEmail.includes('<')) return fromEmail; // already formatted
+  return `"${fromName}" <${fromEmail}>`;
 }
 
 export interface SendEmailInput {
@@ -51,22 +60,17 @@ export interface SendEmailResult {
   error?: string;
 }
 
-function env(key: string, fallback = ''): string {
-  const value = process.env[key];
-  return value === undefined || value === '' ? fallback : value;
-}
-
 function readConfig(): SmtpConfig {
-  const from = env('SMTP_FROM') || env('EMAIL_FROM');
+  const merged = mergeEmailConfig(db.data?.email ?? {});
   return {
-    host: env('SMTP_HOST'),
-    port: Number(env('SMTP_PORT', '587')) || 587,
-    secure: env('SMTP_SECURE', 'false') === 'true',
-    user: env('SMTP_USER'),
-    pass: env('SMTP_PASS'),
-    from,
+    host: merged.host,
+    port: merged.port ?? (merged.secure ? 465 : 587),
+    secure: merged.secure,
+    user: merged.username,
+    pass: merged.password,
+    from: formatFrom(merged.fromEmail || merged.username, merged.fromName),
     // Replies must land in the mailbox the IMAP watcher polls.
-    replyTo: env('REPLY_TO') || env('SMTP_REPLY_TO') || from,
+    replyTo: merged.replyTo || merged.fromEmail || merged.username,
   };
 }
 
@@ -75,8 +79,12 @@ class EmailService {
 
   /** SMTP is considered configured when a host and a sender address exist. */
   isConfigured(): boolean {
-    const config = readConfig();
-    return Boolean(config.host && config.from);
+    return isEmailConfigured(mergeEmailConfig(db.data?.email ?? {}));
+  }
+
+  /** Drop the cached transporter so the next send picks up new credentials. */
+  resetTransporter(): void {
+    this.transporter = null;
   }
 
   /** The mailbox replies are routed to (and that the IMAP watcher should poll). */

@@ -9,12 +9,21 @@
  */
 import { Router } from 'express';
 import { createHmac, timingSafeEqual } from 'crypto';
-import { databaseService, verifyPassword, normalizeEmail, type StoredUser } from '../services/database.js';
+import {
+  databaseService,
+  verifyPassword,
+  normalizeEmail,
+  hashVerificationCode,
+  verifyVerificationCode,
+  type StoredUser,
+} from '../services/database.js';
+import { emailService } from '../services/email.js';
 
 export const authRouter = Router();
 
 const TOKEN_TTL_MS = 1000 * 60 * 60 * 12; // 12 hours
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CODE_TTL_MS = 1000 * 60 * 10; // 10 minutes
 
 function getSecret(): string {
   return process.env.AUTH_SECRET || 'phishyou-dev-secret-change-me';
@@ -54,7 +63,7 @@ function issueToken(user: StoredUser): string {
 }
 
 function publicUser(user: StoredUser) {
-  return { id: user.id, email: user.email, name: user.name, organization: user.organization, role: user.role };
+  return { id: user.id, email: user.email, name: user.name, organization: user.organization, role: user.role, emailVerified: user.emailVerified };
 }
 
 function readBearer(headers: Record<string, string | string[] | undefined>): string | null {
@@ -62,6 +71,34 @@ function readBearer(headers: Record<string, string | string[] | undefined>): str
   const value = Array.isArray(header) ? header[0] : header;
   if (!value || !value.toLowerCase().startsWith('bearer ')) return null;
   return value.slice(7).trim();
+}
+
+/** Generate a 6-digit code, persist its hash and send it through the email connector. */
+async function sendVerificationCode(user: StoredUser): Promise<{ delivered: boolean; devCode?: string }> {
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  await databaseService.updateUser(user.id, {
+    verificationCodeHash: hashVerificationCode(user.email, code),
+    verificationCodeExpiresAt: new Date(Date.now() + CODE_TTL_MS).toISOString(),
+    verificationSentAt: new Date().toISOString(),
+  });
+
+  const result = await emailService.sendEmail({
+    to: user.email,
+    subject: 'Your PhishYou verification code',
+    text: [
+      `Hi ${user.name},`,
+      '',
+      `Your PhishYou verification code is: ${code}`,
+      '',
+      'It expires in 10 minutes. If you did not create this account, ignore this email.',
+      '',
+      '— PhishYou Security',
+    ].join('\n'),
+  });
+
+  // In simulated mode (no SMTP) the code never leaves the server, so surface it
+  // in the response to keep the local/dev flow completable.
+  return result.simulated ? { delivered: false, devCode: code } : { delivered: result.success };
 }
 
 // POST /api/v1/auth/register
@@ -93,10 +130,73 @@ authRouter.post('/register', async (req, res) => {
       role: role?.trim() || 'Security Analyst',
     });
 
-    const token = issueToken(user);
-    return res.status(201).json({ success: true, token, user: publicUser(user) });
+    const verification = await sendVerificationCode(user);
+    return res.status(201).json({
+      success: true,
+      requiresVerification: true,
+      email: user.email,
+      user: publicUser(user),
+      ...(verification.devCode ? { devCode: verification.devCode } : {}),
+    });
   } catch (error) {
     return res.status(500).json({ error: error instanceof Error ? error.message : 'Registration failed.' });
+  }
+});
+
+// POST /api/v1/auth/verify-email
+authRouter.post('/verify-email', async (req, res) => {
+  try {
+    const { email, code } = req.body as { email?: string; code?: string };
+    if (!email || !code) return res.status(400).json({ error: 'Email and code are required.' });
+
+    const user = await databaseService.findUserByEmail(email);
+    if (!user) return res.status(404).json({ error: 'Account not found.' });
+    if (user.emailVerified) {
+      return res.json({ success: true, token: issueToken(user), user: publicUser(user) });
+    }
+
+    if (!user.verificationCodeHash || !user.verificationCodeExpiresAt) {
+      return res.status(400).json({ error: 'No verification code is pending — request a new one.' });
+    }
+    if (Date.now() > new Date(user.verificationCodeExpiresAt).getTime()) {
+      return res.status(400).json({ error: 'Verification code expired — request a new one.' });
+    }
+    if (!verifyVerificationCode(user.email, code, user.verificationCodeHash)) {
+      return res.status(400).json({ error: 'Incorrect verification code.' });
+    }
+
+    const verified = await databaseService.updateUser(user.id, {
+      emailVerified: true,
+      verificationCodeHash: undefined,
+      verificationCodeExpiresAt: undefined,
+    });
+
+    const token = issueToken(verified ?? user);
+    return res.json({ success: true, token, user: publicUser(verified ?? user) });
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Verification failed.' });
+  }
+});
+
+// POST /api/v1/auth/resend-verification
+authRouter.post('/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body as { email?: string };
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+
+    const user = await databaseService.findUserByEmail(email);
+    if (!user) return res.status(404).json({ error: 'Account not found.' });
+    if (user.emailVerified) return res.json({ success: true, alreadyVerified: true });
+
+    // Basic resend throttle: one code per minute.
+    if (user.verificationSentAt && Date.now() - new Date(user.verificationSentAt).getTime() < 60_000) {
+      return res.status(429).json({ error: 'A code was just sent — wait a minute before resending.' });
+    }
+
+    const verification = await sendVerificationCode(user);
+    return res.json({ success: true, delivered: verification.delivered, ...(verification.devCode ? { devCode: verification.devCode } : {}) });
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Could not resend verification.' });
   }
 });
 
@@ -109,6 +209,17 @@ authRouter.post('/login', async (req, res) => {
     const user = await databaseService.findUserByEmail(email);
     if (!user || !verifyPassword(password, user.passwordSalt, user.passwordHash)) {
       return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    if (!user.emailVerified) {
+      // Re-issue a code so the user can complete verification from the login flow.
+      const verification = await sendVerificationCode(user);
+      return res.status(403).json({
+        error: 'Email is not verified.',
+        requiresVerification: true,
+        email: user.email,
+        ...(verification.devCode ? { devCode: verification.devCode } : {}),
+      });
     }
 
     await databaseService.updateUser(user.id, { lastLoginAt: new Date().toISOString() });
