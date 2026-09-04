@@ -26,4 +26,4 @@ BACKEND_PID=$!
 npm --prefix frontend run dev -- --host 0.0.0.0 &
 FRONTEND_PID=$!
 
-wait -n "$BACKEND_PID" "$FRONTEND_PID"
+wait "$BACKEND_PID" "$FRONTEND_PID"
