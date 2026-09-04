@@ -20,16 +20,7 @@ export default function EmailVerify() {
   useEffect(() => {
     if (!initialToken) return;
     let active = true;
-    void verifyEmail(initialToken)
-      .then(() => {
-        if (active) setSuccess(true);
-      })
-      .catch((err) => {
-        if (active) setError(err instanceof ApiError ? err.message : 'Verification failed. Check the link or code and try again.');
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    void verifyEmail(initialToken).then(() => { if (active) setSuccess(true); }).catch((err) => { if (active) setError(err instanceof ApiError ? err.message : 'Verification failed. Check the link or code and try again.'); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [initialToken]);
 
@@ -43,8 +34,7 @@ export default function EmailVerify() {
     event.preventDefault();
     const code = verificationCode.trim();
     if (!code) return setError('Paste the verification token from your email.');
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try { await verifyEmail(code); setSuccess(true); }
     catch (err) { setError(err instanceof ApiError ? err.message : 'Verification failed.'); }
     finally { setLoading(false); }
@@ -56,7 +46,6 @@ export default function EmailVerify() {
     try {
       const response = await resendVerificationEmail(email.trim());
       if (response.verificationUrl) setVerificationCode(new URL(response.verificationUrl).searchParams.get('token') ?? '');
-      setSuccess(false);
     } catch (err) { setError(err instanceof ApiError ? err.message : 'Could not resend the verification email.'); }
     finally { setResending(false); }
   }
