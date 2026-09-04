@@ -1,5 +1,8 @@
 import type { AIProvider, ChatMessage, ChatResponse } from './types.js';
 
+/** Hard cap on a single LLM request so a blocked/slow network can't hang a campaign launch. */
+const REQUEST_TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS ?? '') || 30000;
+
 interface GeminiInteractionContent {
   type?: string;
   text?: string;
@@ -54,36 +57,43 @@ export class GeminiProvider implements AIProvider {
       throw new Error('Missing or invalid Gemini API key');
     }
 
-    const response = await fetch(this.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': this.apiKey,
-      },
-      body: JSON.stringify({
-        model: normalizeModel(this.model),
-        input,
-        ...(previousInteractionId ? { previous_interaction_id: previousInteractionId } : {}),
-      }),
-    });
-
-    let payload: GeminiInteractionResponse & { id?: string };
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-      payload = (await response.json()) as GeminiInteractionResponse & { id?: string };
-    } catch {
-      throw new Error(response.ok ? 'Gemini returned an invalid response' : `[${response.status}] Gemini API request failed`);
-    }
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': this.apiKey,
+        },
+        body: JSON.stringify({
+          model: normalizeModel(this.model),
+          input,
+          ...(previousInteractionId ? { previous_interaction_id: previousInteractionId } : {}),
+        }),
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      throw new Error(`[${response.status}] ${providerError(payload)}`);
-    }
+      let payload: GeminiInteractionResponse & { id?: string };
+      try {
+        payload = (await response.json()) as GeminiInteractionResponse & { id?: string };
+      } catch {
+        throw new Error(response.ok ? 'Gemini returned an invalid response' : `[${response.status}] Gemini API request failed`);
+      }
 
-    const content = extractText(payload);
-    if (!content) {
-      throw new Error('Gemini returned no text output');
-    }
+      if (!response.ok) {
+        throw new Error(`[${response.status}] ${providerError(payload)}`);
+      }
 
-    return { content, interactionId: payload.id };
+      const content = extractText(payload);
+      if (!content) {
+        throw new Error('Gemini returned no text output');
+      }
+
+      return { content, interactionId: payload.id };
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   async testConnection(): Promise<void> {

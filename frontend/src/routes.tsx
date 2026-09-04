@@ -2,6 +2,7 @@
 import { RouteObject } from 'react-router-dom';
 import { Landing } from './pages/Landing';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import { Learning } from './pages/Learning';
 import LiveCampaignMonitor from './pages/LiveCampaignMonitor';
@@ -13,6 +14,7 @@ import NotFound from './pages/NotFound';
 export const routes: RouteObject[] = [
   { path: '/', element: <Landing /> },
   { path: '/login', element: <Login /> },
+  { path: '/register', element: <Register /> },
   { path: '/dashboard', element: <Dashboard /> },
   { path: '/learning', element: <Learning /> },
   { path: '/campaigns/:id/live', element: <LiveCampaignMonitor /> },

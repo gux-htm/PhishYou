@@ -25,7 +25,7 @@ export class CampaignExecutionService {
   private async initAIProvider(): Promise<AIProvider> {
     if (!this.aiProvider) {
       const config = mergeAIConfig(db.data?.ai ?? {});
-      this.aiProvider = await createProvider(config.provider);
+      this.aiProvider = createProvider(config);
     }
     return this.aiProvider;
   }
@@ -190,8 +190,9 @@ Return the response in the following JSON format:
 `;
 
     try {
-      const response = await ai.chat(prompt, []);
-      
+      const chatResponse = await ai.chat([{ role: 'user', content: prompt }]);
+      const response = chatResponse.content;
+
       // Try to parse JSON response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (jsonMatch) {

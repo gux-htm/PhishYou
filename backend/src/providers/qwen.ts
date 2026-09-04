@@ -1,5 +1,8 @@
 import type { AIProvider, ChatMessage, ChatResponse } from './types.js';
 
+/** Hard cap on a single LLM request so a blocked/slow network can't hang a campaign launch. */
+const REQUEST_TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS ?? '') || 30000;
+
 interface OpenAICompatibleChoice {
   message?: {
     content?: string | null;
@@ -36,35 +39,42 @@ export class QwenProvider implements AIProvider {
       throw new Error('Missing or invalid LLM API key');
     }
 
-    const response = await fetch(this.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        messages,
-        max_tokens: maxTokens,
-      }),
-    });
-
-    let payload: OpenAICompatibleResponse;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
     try {
-      payload = (await response.json()) as OpenAICompatibleResponse;
-    } catch {
-      throw new Error(response.ok ? 'Empty or invalid provider response' : `Provider HTTP ${response.status}`);
-    }
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages,
+          max_tokens: maxTokens,
+        }),
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      throw new Error(`[${response.status}] ${safeErrorMessage(payload) || `Provider HTTP ${response.status}`}`);
-    }
+      let payload: OpenAICompatibleResponse;
+      try {
+        payload = (await response.json()) as OpenAICompatibleResponse;
+      } catch {
+        throw new Error(response.ok ? 'Empty or invalid provider response' : `Provider HTTP ${response.status}`);
+      }
 
-    const content = payload.choices?.[0]?.message?.content;
-    if (typeof content !== 'string' || content.length === 0) {
-      throw new Error('Provider returned an empty response');
+      if (!response.ok) {
+        throw new Error(`[${response.status}] ${safeErrorMessage(payload) || `Provider HTTP ${response.status}`}`);
+      }
+
+      const content = payload.choices?.[0]?.message?.content;
+      if (typeof content !== 'string' || content.length === 0) {
+        throw new Error('Provider returned an empty response');
+      }
+      return content;
+    } finally {
+      clearTimeout(timer);
     }
-    return content;
   }
 
   async testConnection(): Promise<void> {

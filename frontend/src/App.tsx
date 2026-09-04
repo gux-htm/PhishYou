@@ -4,6 +4,7 @@ import { ThemeProvider } from './design/ThemeProvider';
 import { AppFrame } from './design/AppFrame';
 import { Landing } from './pages/Landing';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CampaignList from './pages/CampaignList';
 import { Learning } from './pages/Learning';
@@ -43,6 +44,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Product><Dashboard /></Product>} />
           <Route path="/campaigns" element={<Product><CampaignList /></Product>} />
           <Route path="/campaigns/new" element={<Product><Phase1CampaignBuilder /></Product>} />
